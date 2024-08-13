@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 pub struct Config {
     pub api_key: String,
+    pub base_url: String,
 }
 
 impl Config {
@@ -22,8 +23,13 @@ impl Config {
             panic!("api_key not found in config file");
         });
 
+        let url = env.get("base_url").unwrap_or_else(|| {
+            panic!("url not found in config file");
+        });
+
         Config {
             api_key: api_key.to_string(),
+            base_url: url.to_string(),
         }
     }
 }

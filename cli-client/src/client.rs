@@ -1,9 +1,9 @@
 use reqwest;
 
-pub async fn get_example() {
+pub async fn check_health(base_url: String) {
     let client = reqwest::Client::new();
     let response = client
-        .get("https://rn5aez7sm9.execute-api.eu-central-1.amazonaws.com/v1/health")
+        .get(format!("{}/v1/health", base_url))
         .send()
         .await
         .expect("Failed to execute request");
