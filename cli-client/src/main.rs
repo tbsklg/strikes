@@ -16,7 +16,5 @@ async fn main() {
     let path = PathBuf::from(home).join(".strike");
     let config = Config::parse(args.config_path.unwrap_or(path));
 
-    check_health(config.base_url).await;
-
-    println!("args: {:?}", config.api_key);
+    check_health(config.base_url, config.api_key).await;
 }

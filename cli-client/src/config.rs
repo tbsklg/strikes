@@ -23,13 +23,13 @@ impl Config {
             panic!("api_key not found in config file");
         });
 
-        let url = env.get("base_url").unwrap_or_else(|| {
+        let base_url = env.get("base_url").unwrap_or_else(|| {
             panic!("url not found in config file");
         });
 
         Config {
             api_key: api_key.to_string(),
-            base_url: url.to_string(),
+            base_url: base_url.to_string(),
         }
     }
 }

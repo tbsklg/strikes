@@ -27,10 +27,11 @@ resource "aws_api_gateway_resource" "health" {
 }
 
 resource "aws_api_gateway_method" "health" {
-  authorization = "NONE"
-  http_method   = "GET"
-  resource_id   = aws_api_gateway_resource.health.id
-  rest_api_id   = aws_api_gateway_rest_api.strikes.id
+  authorization     = "NONE"
+  http_method       = "GET"
+  resource_id       = aws_api_gateway_resource.health.id
+  rest_api_id       = aws_api_gateway_rest_api.strikes.id
+  api_key_required  = true
 }
 
 resource "aws_api_gateway_integration" "health" {
@@ -67,8 +68,40 @@ resource "aws_api_gateway_deployment" "strikes" {
   }
 }
 
+resource "aws_api_gateway_api_key" "strikes" {
+  name = "strikes-api-key"
+}
+
 resource "aws_api_gateway_stage" "strikes" {
   deployment_id = aws_api_gateway_deployment.strikes.id
   rest_api_id   = aws_api_gateway_rest_api.strikes.id
+
   stage_name    = "v1"
+}
+
+resource "aws_api_gateway_usage_plan" "strikes" {
+  name         = "strikes-usage-plan"
+  product_code = "MYCODE"
+
+  api_stages {
+    api_id = aws_api_gateway_rest_api.strikes.id
+    stage  = aws_api_gateway_stage.strikes.stage_name
+  }
+
+  quota_settings {
+    limit  = 20
+    offset = 2
+    period = "WEEK"
+  }
+
+  throttle_settings {
+    burst_limit = 5
+    rate_limit  = 10
+  }
+}
+
+resource "aws_api_gateway_usage_plan_key" "main" {
+  key_id        = aws_api_gateway_api_key.strikes.id
+  key_type      = "API_KEY"
+  usage_plan_id = aws_api_gateway_usage_plan.strikes.id
 }
