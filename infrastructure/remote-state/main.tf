@@ -15,7 +15,6 @@ resource "aws_s3_bucket" "tf_backend_state" {
   bucket = "tf-backend-state-strikes"
 }
 
-
 resource "aws_s3_bucket_versioning" "tf_backend_state_versioning" {
   bucket = aws_s3_bucket.tf_backend_state.id
   versioning_configuration {

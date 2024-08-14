@@ -6,16 +6,16 @@ terraform {
     }
   }
   backend "s3" {
-    bucket = "tf-backend-state-strikes"
-    encrypt = true
+    bucket         = "tf-backend-state-strikes"
+    encrypt        = true
     dynamodb_table = "tf-backend-lock-strikes"
-    key = "terraform.tfstate"
-    region = "eu-central-1"
+    key            = "terraform.tfstate"
+    region         = "eu-central-1"
   }
 }
 
 provider "aws" {
-  region = "eu-central-1"
+  region  = "eu-central-1"
   profile = "cc"
 }
 
@@ -34,26 +34,26 @@ resource "aws_api_gateway_resource" "health" {
 }
 
 resource "aws_api_gateway_method" "health" {
-  authorization     = "NONE"
-  http_method       = "GET"
-  resource_id       = aws_api_gateway_resource.health.id
-  rest_api_id       = aws_api_gateway_rest_api.strikes.id
-  api_key_required  = true
+  authorization    = "NONE"
+  http_method      = "GET"
+  resource_id      = aws_api_gateway_resource.health.id
+  rest_api_id      = aws_api_gateway_rest_api.strikes.id
+  api_key_required = true
 }
 
 resource "aws_api_gateway_integration" "health" {
-  http_method = aws_api_gateway_method.health.http_method
-  resource_id = aws_api_gateway_resource.health.id
-  rest_api_id = aws_api_gateway_rest_api.strikes.id
-  type        = "AWS_PROXY"
+  http_method             = aws_api_gateway_method.health.http_method
+  resource_id             = aws_api_gateway_resource.health.id
+  rest_api_id             = aws_api_gateway_rest_api.strikes.id
+  type                    = "AWS_PROXY"
   integration_http_method = "POST"
-  uri                     = "${module.health.lambda_invoke_arn}"
+  uri                     = module.health.lambda_invoke_arn
 }
 
 resource "aws_lambda_permission" "apigw_invoke_health_lambda" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = "${module.health.lambda_function_name}"
+  function_name = module.health.lambda_function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"
@@ -83,7 +83,7 @@ resource "aws_api_gateway_stage" "strikes" {
   deployment_id = aws_api_gateway_deployment.strikes.id
   rest_api_id   = aws_api_gateway_rest_api.strikes.id
 
-  stage_name    = "v1"
+  stage_name = "v1"
 }
 
 resource "aws_api_gateway_usage_plan" "strikes" {

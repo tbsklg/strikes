@@ -1,6 +1,6 @@
 locals {
-    app_name = "strikes"
-    lambda_name = "health_lambda"
+  app_name    = "strikes"
+  lambda_name = "health_lambda"
 }
 
 data "aws_iam_policy_document" "lambda_assume_role" {
@@ -13,17 +13,17 @@ data "aws_iam_policy_document" "lambda_assume_role" {
     }
 
     actions = ["sts:AssumeRole"]
- }
+  }
 }
 
 resource "aws_iam_role" "lambda_role" {
-    name               = "${local.app_name}-${local.lambda_name}"
-    assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+  name               = "${local.app_name}-${local.lambda_name}"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
 }
 
 resource "aws_iam_role_policy_attachment" "basic_execution_role_policy_attachment" {
-    role        = aws_iam_role.lambda_role.name
-    policy_arn  = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 data "archive_file" "lambda_archive" {
