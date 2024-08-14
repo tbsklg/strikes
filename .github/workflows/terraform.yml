@@ -1,3 +1,7 @@
+defaults:
+  run:
+    shell: bash
+    working-directory: infrastructure
 name: Deploy
 on: [push, pull_request]
 jobs:
