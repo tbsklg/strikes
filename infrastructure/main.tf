@@ -5,6 +5,13 @@ terraform {
       version = "~> 5.38.0"
     }
   }
+  backend "s3" {
+    bucket = "tf-backend-state-strikes"
+    encrypt = true
+    dynamodb_table = "tf-backend-lock-strikes"
+    key = "terraform.tfstate"
+    region = "eu-central-1"
+  }
 }
 
 provider "aws" {
@@ -90,8 +97,7 @@ resource "aws_api_gateway_usage_plan" "strikes" {
 
   quota_settings {
     limit  = 20
-    offset = 2
-    period = "WEEK"
+    period = "DAY"
   }
 
   throttle_settings {
