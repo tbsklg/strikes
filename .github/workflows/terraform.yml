@@ -9,33 +9,6 @@ permissions:
   contents: read
   pull-requests: write
 jobs:
-  bootstrap-infrastructure:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v1
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ secrets.AWS_OIDC_ASSUME_ROLE_ARN }}
-          aws-region: eu-central-1
-          role-session-name: GitHub-OIDC-TF
-
-      - name: Terraform Init
-        run: terraform init
-        working-directory: infrastructure/remote-state
-
-      - name: Terraform Plan
-        if: github.event.name == 'pull_request'
-        run: terraform plan
-        working-directory: infrastructure/remote-state
-
-      - name: Terraform Apply
-        #if: github.ref == 'refs/head/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve
-        working-directory: infrastructure/remote-state
-
   deploy-infrastructure:
     needs: bootstrap-infrastructure
     runs-on: ubuntu-latest
