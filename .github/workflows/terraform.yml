@@ -37,6 +37,7 @@ jobs:
         working-directory: infrastructure/remote-state
 
   deploy-infrastructure:
+    needs: bootstrap-infrastructure
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
