@@ -17,7 +17,9 @@ jobs:
       - run: |
           rustup update stable && rustup default stable  
           cargo build --verbose
-          cargo test --verbose
+        working-directory: cli-client
+
+      - run: cargo test --verbose
         working-directory: cli-client
 
   infrastructure:
