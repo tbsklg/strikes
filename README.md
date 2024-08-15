@@ -1,1 +1,1 @@
-# Strike
+# Strikes
