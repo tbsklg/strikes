@@ -16,7 +16,7 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
 
       - name: Build rust lambda
-      - run: |
+        run: |
           pip3 install cargo-lambda
           rustup update stable && rustup default stable
           cargo lambda build --arm64 --release
