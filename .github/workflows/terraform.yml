@@ -14,12 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - run: |
-          rustup update stable && rustup default stable  
-          cargo build --verbose
-        working-directory: cli-client
+      - run: rustup update stable && rustup default stable  
 
       - run: cargo test --verbose
+        working-directory: cli-client
+
+      - run: cargo build --verbose
         working-directory: cli-client
 
   infrastructure:
