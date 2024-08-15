@@ -25,6 +25,8 @@ jobs:
   deploy-infrastructure:
     runs-on: ubuntu-latest
     needs: build-lambdas
+    dependencies: 
+      - build-lambdas
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
