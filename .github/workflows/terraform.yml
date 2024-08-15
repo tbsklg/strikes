@@ -36,7 +36,6 @@ jobs:
         run: terraform apply -auto-approve
         working-directory: infrastructure/remote-state
 
-jobs:
   deploy-infrastructure:
     runs-on: ubuntu-latest
     steps:
