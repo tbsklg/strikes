@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use strike::config::Config;
+use strikes::config::Config;
 
 #[test]
 fn parse_valid_config() {

@@ -13,7 +13,7 @@ struct Cli {
 async fn main() {
     let args = Cli::parse();
     let home = std::env::var("HOME").unwrap();
-    let path = PathBuf::from(home).join(".strike");
+    let path = PathBuf::from(home).join(".strike/config");
     let config = Config::parse(args.config_path.unwrap_or(path));
 
     check_health(config.base_url, config.api_key).await;
