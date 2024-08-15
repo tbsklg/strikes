@@ -12,16 +12,11 @@ jobs:
   build_and_test:
     name: rust-lambdas
     runs-on: ubuntu-latest
-    working-directory: health
-    strategy:
-      matrix:
-        toolchain:
-          - stable
     steps:
       - uses: actions/checkout@v4
       - run: |
           pip3 install cargo-lambda
-          rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+          rustup update stable && rustup default stable
           cargo lambda build --arm64 --release
           cargo test --verbose
         working-directory: health
