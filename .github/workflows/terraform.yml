@@ -19,7 +19,7 @@ jobs:
           rustup update stable && rustup default stable
           cargo lambda build --arm64 --release
           cargo test --verbose
-        working-directory: health
+        working-directory: infrastructure/health
 
   deploy-infrastructure:
     runs-on: ubuntu-latest
