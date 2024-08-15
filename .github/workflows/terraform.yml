@@ -14,9 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - run: rustup update stable && rustup default stable
-      - run: cargo build --verbose
-      - run: cargo test --verbose
+      - run: |
+          rustup update stable && rustup default stable  
+          cargo build --verbose
+          cargo test --verbose
+        working-directory: cli-client
 
   infrastructure:
     runs-on: ubuntu-latest
