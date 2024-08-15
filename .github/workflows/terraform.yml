@@ -9,13 +9,41 @@ permissions:
   contents: read
   pull-requests: write
 jobs:
+  bootstrap-infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v1
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: infrastructure/remote-state
+
+      - name: Terraform Plan
+        if: github.event.name == 'pull_request'
+        run: terraform plan
+        working-directory: infrastructure/remote-state
+
+      - name: Terraform Apply
+        #if: github.ref == 'refs/head/main' && github.event_name == 'push'
+        run: terraform apply -auto-approve
+        working-directory: infrastructure/remote-state
+
+jobs:
   deploy-infrastructure:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
 
-      - name: Build rust lambda
+      - name: Build & Test lambda
         run: |
           pip3 install cargo-lambda
           rustup update stable && rustup default stable
