@@ -10,7 +10,6 @@ permissions:
   pull-requests: write
 jobs:
   deploy-infrastructure:
-    needs: bootstrap-infrastructure
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
