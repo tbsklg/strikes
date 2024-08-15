@@ -42,7 +42,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        if: github.event.name == 'pull_request'
+        if: github.event == 'pull_request'
         run: terraform plan
       
       - name: Terraform Apply
