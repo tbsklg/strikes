@@ -1,7 +1,7 @@
 use clap::Parser;
 use std::path::PathBuf;
-use strike::client::check_health;
-use strike::config::Config;
+use strikes::client::check_health;
+use strikes::config::Config;
 
 #[derive(Debug, Parser)]
 struct Cli {
