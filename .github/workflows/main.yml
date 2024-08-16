@@ -3,7 +3,7 @@ defaults:
     shell: bash
     working-directory: infrastructure
 name: Deploy
-on: [pull_request]
+on: [push, pull_request]
 permissions:
   id-token: write
   contents: read
@@ -55,7 +55,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        if: github.event == 'pull_request'
+        if: github.event_name == 'pull_request'
         run: terraform plan
       
       - name: Terraform Apply

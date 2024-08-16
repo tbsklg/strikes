@@ -1,7 +1,8 @@
 use clap::Parser;
 use std::path::PathBuf;
-use strikes::client::check_health;
-use strikes::config::Config;
+use strikes::{
+    configuration::get_configuration, local_client::add_strike, remote_client::check_health,
+};
 
 #[derive(Debug, Parser)]
 struct Cli {
@@ -12,9 +13,12 @@ struct Cli {
 #[tokio::main]
 async fn main() {
     let args = Cli::parse();
-    let home = std::env::var("HOME").unwrap();
-    let path = PathBuf::from(home).join(".strike/config");
-    let config = Config::parse(args.config_path.unwrap_or(path));
+    let home = &std::env::var("HOME").unwrap();
+    let config_path = PathBuf::from(home).join(".strikes/configuration.yaml");
+    let config = get_configuration(args.config_path.unwrap_or(config_path))
+        .expect("Faild to read configuration.");
 
     check_health(config.base_url, config.api_key).await;
+    let db_path = PathBuf::from(home).join(".strikes/db.json");
+    add_strike(&args.name, &db_path);
 }

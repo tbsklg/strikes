@@ -1,2 +1,3 @@
-pub mod config;
-pub mod client;
+pub mod configuration;
+pub mod remote_client;
+pub mod local_client;
