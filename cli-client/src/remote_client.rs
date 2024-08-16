@@ -9,5 +9,8 @@ pub async fn check_health(base_url: String, api_key: String) {
         .await
         .expect("Failed to execute request");
 
-    println!("Try to reach remote location: {:?}", response.text().await.unwrap());
+    println!(
+        "Try to reach remote location: {:?}",
+        response.text().await.unwrap()
+    );
 }

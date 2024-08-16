@@ -6,9 +6,11 @@ pub struct Settings {
 
 pub fn get_configuration(path: std::path::PathBuf) -> Result<Settings, config::ConfigError> {
     let settings = config::Config::builder()
-        .add_source(
-            config::File::new(path.to_str().unwrap(), config::FileFormat::Yaml)
-        ).build()?;
+        .add_source(config::File::new(
+            path.to_str().unwrap(),
+            config::FileFormat::Yaml,
+        ))
+        .build()?;
 
     settings.try_deserialize::<Settings>()
 }
@@ -18,10 +20,10 @@ mod tests {
     use super::*;
     use std::path::PathBuf;
 
-
     #[test]
     fn parse_valid_config() {
-        let configuration = get_configuration(PathBuf::from("tests/fixtures/valid_config.yaml")).unwrap();
+        let configuration =
+            get_configuration(PathBuf::from("tests/fixtures/valid_config.yaml")).unwrap();
         assert_eq!(configuration.api_key, "abc");
         assert_eq!(configuration.base_url, "https://example.com");
     }
