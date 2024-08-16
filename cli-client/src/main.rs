@@ -1,8 +1,6 @@
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use strikes::{
-    configuration::get_configuration, local_client::add_strike, remote_client::check_health,
-};
+use strikes::{configuration::get_configuration, local_client::add_strike};
 
 #[derive(Subcommand, Clone, Debug)]
 enum Command {
@@ -23,9 +21,12 @@ struct Cli {
     #[arg(
         short,
         long,
-        help = "Specify the path to the configuration file where the strikes are stored."
+        help = "Specify the path to the configuration file where the strikes are stored"
     )]
     config_path: Option<std::path::PathBuf>,
+
+    #[arg(short, long, help = "Specify the path to the database file (needs to be a JSON file)")]
+    db_path: Option<std::path::PathBuf>,
     #[command(subcommand)]
     command: Option<Command>,
 }
@@ -40,7 +41,9 @@ async fn main() {
         .expect("Faild to read configuration.");
 
     // check_health(config.base_url, config.api_key).await;
-    let db_path = PathBuf::from(home).join(".strikes/db.json");
+    let db_path = args
+        .db_path
+        .unwrap_or_else(|| PathBuf::from(home).join(".strikes/db.json"));
 
     match args.command.unwrap() {
         Command::Strike { name } => {
