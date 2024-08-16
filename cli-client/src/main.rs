@@ -25,7 +25,7 @@ struct Cli {
     )]
     config_path: Option<std::path::PathBuf>,
 
-    #[arg(short, long, help = "Specify the path to the database file (needs to be a JSON file)")]
+    #[arg(short, long, help = "Specify the path to the database json file (i.e. db.json)")]
     db_path: Option<std::path::PathBuf>,
     #[command(subcommand)]
     command: Option<Command>,
