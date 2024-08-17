@@ -28,6 +28,6 @@ db_path: /path/to/db.json
 The following command will create a database (db.json) in the current directory.
 
 ```bash
-strikes --db_path . strike <user>
+strikes --db-path ./my-db.json strike <user>
 ```
 
