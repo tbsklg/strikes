@@ -1,0 +1,53 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - 3-provide-local-db-for-storing-strikes
+    tags:
+    - "[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  create-release:
+    name: Create release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            rust: stable
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            rust: stable
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            rust: stable
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ matrix.rust }}
+
+      - name: Get release version number
+        if: env.VERSION == ''
+        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Check that tag version and Cargo.toml version are the same
+        shell: bash
+        run: |
+          if ! grep -q "version = \"$VERSION\"" Cargo.toml; then
+            echo "version does not match Cargo.toml" >&2
+            exit 1
+          fi
+
+      - name: Create GitHub release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release create $VERSION --draft --verify-tag --title $VERSION
+    outputs:
+      version: ${{ env.VERSION }}
+
+
