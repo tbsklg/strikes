@@ -15,10 +15,8 @@ strikes ls
 You can use the local client without a remote server.
 It will generate a JSON file where the strikes are stored. 
 The default path is in your home directory at '.strikes/db.json'.
-You can configure a different location by using the '--db_path' argument or by providing a configuration file.
+You can configure a different location by using the '--db-path' argument or by providing a configuration file.
 The argument has precedence over the configuration file.
-
-```bash
 
 ### Configuration file
 The configuration file needs to be a yaml file.
