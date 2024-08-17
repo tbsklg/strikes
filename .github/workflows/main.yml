@@ -1,13 +1,22 @@
+name: Infrastructure
 defaults:
   run:
     shell: bash
     working-directory: infrastructure
-name: Deploy
-on: [push, pull_request]
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 permissions:
   id-token: write
   contents: read
   pull-requests: write
+
 jobs:
   infrastructure:
     runs-on: ubuntu-latest

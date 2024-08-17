@@ -1,4 +1,4 @@
-name: cli-client
+name: Cli-client
 defaults:
   run:
     shell: bash
