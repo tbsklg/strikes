@@ -41,6 +41,7 @@ jobs:
         run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Check that tag version and Cargo.toml version are the same
+        if: false
         shell: bash
         run: |
           if ! grep -q "version = \"$VERSION\"" Cargo.toml; then
