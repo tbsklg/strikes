@@ -8,9 +8,9 @@ fn missing_subcommand() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("strikes")?;
 
     cmd.arg("guenther");
-    cmd.assert()
-        .failure()
-        .stderr(predicate::str::contains("unrecognized subcommand 'guenther'"));
+    cmd.assert().failure().stderr(predicate::str::contains(
+        "unrecognized subcommand 'guenther'",
+    ));
 
     Ok(())
 }
@@ -22,7 +22,10 @@ fn add_strike() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut cmd = Command::cargo_bin("strikes")?;
 
-    cmd.arg("--db-path").arg(file.path()).arg("strike").arg("guenther");
+    cmd.arg("--db-path")
+        .arg(file.path())
+        .arg("strike")
+        .arg("guenther");
     cmd.assert().success();
 
     Ok(())

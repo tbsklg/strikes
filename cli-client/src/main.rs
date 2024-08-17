@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use strikes::{configuration::get_configuration, local_client::add_strike};
+use strikes::local_client::add_strike;
 
 #[derive(Subcommand, Clone, Debug)]
 enum Command {
@@ -25,7 +25,11 @@ struct Cli {
     )]
     config_path: Option<std::path::PathBuf>,
 
-    #[arg(short, long, help = "Specify the path to the database json file (i.e. db.json)")]
+    #[arg(
+        short,
+        long,
+        help = "Specify the path to the database json file (i.e. db.json)"
+    )]
     db_path: Option<std::path::PathBuf>,
     #[command(subcommand)]
     command: Option<Command>,
