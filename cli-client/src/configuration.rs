@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 #[derive(serde::Deserialize)]
 pub struct Settings {
     pub remote: Option<RemoteSettings>,
@@ -13,6 +15,21 @@ pub struct RemoteSettings {
 #[derive(serde::Deserialize)]
 pub struct LocalSettings {
     pub db_path: std::path::PathBuf,
+}
+
+impl Default for Settings {
+    fn default() -> Self {
+        Self {
+            remote: None,
+            local: {
+                Some(LocalSettings {
+                    db_path: std::env::var("HOME")
+                        .map(|home| PathBuf::from(home).join(".strikes/db.json"))
+                        .unwrap(),
+                })
+            },
+        }
+    }
 }
 
 pub fn get_configuration(path: std::path::PathBuf) -> Result<Settings, config::ConfigError> {
