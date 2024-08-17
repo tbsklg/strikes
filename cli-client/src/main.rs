@@ -36,9 +36,9 @@ async fn main() {
     let args = Cli::parse();
 
     let home = &std::env::var("HOME").unwrap();
-    let config_path = PathBuf::from(home).join(".strikes/configuration.yaml");
-    let _config = get_configuration(args.config_path.unwrap_or(config_path))
-        .expect("Faild to read configuration.");
+    //let config_path = PathBuf::from(home).join(".strikes/configuration.yaml");
+    // let _config = get_configuration(args.config_path.unwrap_or(config_path))
+    //    .expect("Faild to read configuration.");
 
     // check_health(config.base_url, config.api_key).await;
     let db_path = args
