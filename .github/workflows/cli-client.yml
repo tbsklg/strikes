@@ -12,52 +12,52 @@ on:
     branches:
       - main
   
-  env:
-    CARGO_TERM_COLOR: always
+env:
+CARGO_TERM_COLOR: always
 
-  jobs: 
-    test:
-      name: Test
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - uses: dtolnay/rust-toolchain@stable
-        
-        - name: Run tests
-          run: cargo test
+jobs: 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      
+      - name: Run tests
+        run: cargo test
 
-    fmt:
-      name: Rustfmt
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - uses: dtolnay/rust-toolchain@stable
-        
-        - name: Enforce formatting
-          run: cargo fmt -- --check
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      
+      - name: Enforce formatting
+        run: cargo fmt -- --check
 
-    clippy:
-      name: Clippy
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - uses: dtolnay/rust-toolchain@stable
-          with:
-            components: clippy
-        
-        - name: Linting
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      
+      - name: Linting
           run: cargo clippy -- -D warnings
 
-    coverage:
-      name: Code coverage
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - uses: dtolnay/rust-toolchain@stable
-        
-        - name: Install tarpaulin
-          run: cargo install cargo-tarpaulin
+  coverage:
+    name: Code coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install tarpaulin
+        run: cargo install cargo-tarpaulin
 
-        - name: Generate code coverage
-          run: cargo tarpaulin --verbose --workspace
+      - name: Generate code coverage
+        run: cargo tarpaulin --verbose --workspace
 
