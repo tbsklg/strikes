@@ -1,2 +1,5 @@
-api_key: abc
-base_url: https://example.com
+remote:
+  api_key: abc
+  base_url: https://example.com
+local:
+  db_path: /Home/.strikes

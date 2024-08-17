@@ -1,7 +1,18 @@
 #[derive(serde::Deserialize)]
 pub struct Settings {
+    pub remote: Option<RemoteSettings>,
+    pub local: Option<LocalSettings>,
+}
+
+#[derive(serde::Deserialize)]
+pub struct RemoteSettings {
     pub api_key: String,
     pub base_url: String,
+}
+
+#[derive(serde::Deserialize)]
+pub struct LocalSettings {
+    pub db_path: std::path::PathBuf,
 }
 
 pub fn get_configuration(path: std::path::PathBuf) -> Result<Settings, config::ConfigError> {
@@ -24,8 +35,11 @@ mod tests {
     fn parse_valid_config() {
         let configuration =
             get_configuration(PathBuf::from("tests/fixtures/valid_config.yaml")).unwrap();
-        assert_eq!(configuration.api_key, "abc");
-        assert_eq!(configuration.base_url, "https://example.com");
+        assert_eq!(configuration.remote.as_ref().unwrap().api_key, "abc");
+        assert_eq!(
+            configuration.remote.as_ref().unwrap().base_url,
+            "https://example.com"
+        );
     }
 
     #[test]
