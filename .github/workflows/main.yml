@@ -9,19 +9,6 @@ permissions:
   contents: read
   pull-requests: write
 jobs:
-  cli-client:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - run: rustup update stable && rustup default stable  
-
-      - run: cargo build --verbose
-        working-directory: cli-client
-
-      - run: cargo test --verbose
-        working-directory: cli-client
-
   infrastructure:
     runs-on: ubuntu-latest
     steps:
