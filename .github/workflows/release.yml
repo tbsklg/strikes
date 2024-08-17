@@ -1,5 +1,10 @@
 name: Release
 
+defaults:
+  run:
+    shell: bash
+    working-directory: cli-client
+
 on:
   push:
     branches:
