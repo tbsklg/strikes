@@ -5,6 +5,9 @@ defaults:
     shell: bash
     working-directory: cli-client
 
+permissions:
+  contents: write
+
 on:
   push:
     tags:
