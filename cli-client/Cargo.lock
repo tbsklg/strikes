@@ -1360,7 +1360,7 @@ dependencies = [
 
 [[package]]
 name = "strikes"
-version = "0.0.1"
+version = "0.0.1-alpha"
 dependencies = [
  "assert_cmd",
  "assert_fs",
