@@ -49,8 +49,6 @@ async fn main() {
         |local| local.db_path,
     ));
 
-    println!("{:?}", db_path);
-
     match args.command.unwrap() {
         Command::Strike { name } => {
             add_strike(&name, &db_path);
