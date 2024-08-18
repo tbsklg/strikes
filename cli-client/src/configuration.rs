@@ -66,7 +66,6 @@ mod tests {
         let configuration = get_configuration(PathBuf::from("tests/fixtures/empty_config.yaml"))
             .unwrap_or_default();
 
-
         assert_eq!(
             configuration.local.unwrap().db_path,
             PathBuf::from("/home/user/.strikes/db.json")

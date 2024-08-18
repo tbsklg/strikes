@@ -99,17 +99,17 @@ jobs:
       - name: Download arm64 tarball
         uses: actions/download-artifact@v4
         with:
-          name: strikes-${{ env.VERSION }}-aarch64-unknown-linux-musl
+          name: ./cli-client/artifacts/strikes-${{ env.VERSION }}-aarch64-unknown-linux-musl
 
       - name: Download x86_64_apple_darwin tarball
         uses: actions/download-artifact@v4
         with:
-          name: strikes-${{ env.VERSION }}-x86_64-apple-darwin.tar.gz
+          name: ./cli-client/artifacts/strikes-${{ env.VERSION }}-x86_64-apple-darwin.tar.gz
 
       - name: Download x86_64 tarball
         uses: actions/download-artifact@v4
         with:
-          name: strikes-${{ env.VERSION }}-x86_64-unknown-linux-musl 
+          name: ./cli-client/artifacts/strikes-${{ env.VERSION }}-x86_64-unknown-linux-musl 
 
       - name: Release arm64 tarball
         uses: softprops/action-gh-release@v1
