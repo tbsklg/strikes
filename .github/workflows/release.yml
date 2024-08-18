@@ -72,7 +72,7 @@ jobs:
         run: mv target/${{ matrix.target }}/release/strikes artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}
 
       - name: Create tarball
-        run: tar -czf artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}.tar.gz -C artifacts strikes-${{ env.VERSION }}-${{ matrix.target }}
+        run: tar -czf strikes-${{ env.VERSION }}-${{ matrix.target }}.tar.gz -C artifacts strikes-${{ env.VERSION }}-${{ matrix.target }}
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
