@@ -3,7 +3,6 @@ name: Release
 defaults:
   run:
     shell: bash
-    working-directory: cli-client
 
 permissions:
   contents: write
@@ -15,6 +14,7 @@ on:
 
 jobs:
   build:
+    id: build
     name: Build artifact
     runs-on: ${{ matrix.os }}
     strategy:
@@ -32,6 +32,8 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
+        with:
+          sparse-checkout: cli-client
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.rust }}
@@ -105,17 +107,17 @@ jobs:
       - name: Download arm64 tarball
         uses: actions/download-artifact@v4
         with:
-          name: ./cli-client/artifacts/strikes-${{ env.VERSION }}-aarch64-unknown-linux-musl
+          name: strikes-${{ env.VERSION }}-aarch64-unknown-linux-musl
 
       - name: Download x86_64_apple_darwin tarball
         uses: actions/download-artifact@v4
         with:
-          name: ./cli-client/artifacts/strikes-${{ env.VERSION }}-x86_64-apple-darwin.tar.gz
+          name: strikes-${{ env.VERSION }}-x86_64-apple-darwin.tar.gz
 
       - name: Download x86_64 tarball
         uses: actions/download-artifact@v4
         with:
-          name: ./cli-client/artifacts/strikes-${{ env.VERSION }}-x86_64-unknown-linux-musl 
+          name: strikes-${{ env.VERSION }}-x86_64-unknown-linux-musl 
 
       - name: Release arm64 tarball
         uses: softprops/action-gh-release@v1
