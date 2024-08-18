@@ -19,7 +19,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         include:
           - target: x86_64-unknown-linux-musl
             os: ubuntu-latest
@@ -38,6 +38,7 @@ jobs:
           toolchain: ${{ matrix.rust }}
 
       - name: Get release version number
+        id: get_release_version
         if: env.VERSION == ''
         run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
@@ -48,12 +49,17 @@ jobs:
             echo "version does not match Cargo.toml" >&2
             exit 1
           fi
+      
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cross
+      
+      - name: Build release
+        run: cross build --release --target ${{ matrix.target }}
 
-      - name: Create GitHub release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create $VERSION --draft --verify-tag --title $VERSION
-    outputs:
-      version: ${{ env.VERSION }}
+      - name: Create release directory
+        run: mkdir -p artifacts/strikes/strikes-${{ steps.get_release_version.outputs.VERSION }}-${{ matrix.target }}
 
+      - name: Move binary to release directory
+        run: mv target/${{ matrix.target }}/release/strikes/ artifacts/strikes/strikes-${{ steps.get_release_version.outputs.VERSION }}-${{ matrix.target }}
 
