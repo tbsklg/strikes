@@ -54,7 +54,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update -y
-          sudo apt-get install pkg-config clang gcc-aarch64-linux-gnu musl-tools -y
+          sudo apt-get install clang gcc-aarch64-linux-gnu musl-tools -y
 
       - name: Add rustup target
         run: rustup target add ${{ matrix.target }}
