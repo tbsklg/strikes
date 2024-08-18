@@ -1,7 +1,7 @@
 use assert_cmd::prelude::*;
 use assert_fs::fixture::FileWriteStr;
 use predicates::prelude::*;
-use std::process::Command;
+use std::{env, fs, process::Command};
 
 #[test]
 fn missing_subcommand() -> Result<(), Box<dyn std::error::Error>> {
@@ -40,6 +40,19 @@ fn list_strikes() -> Result<(), Box<dyn std::error::Error>> {
 
     cmd.arg("--db-path").arg(file.path()).arg("ls");
     cmd.assert().success().stdout("{\"guenther\": 1}\n");
+
+    Ok(())
+}
+
+#[test]
+fn configuration_directory_not_exists() -> Result<(), Box<dyn std::error::Error>> {
+    env::set_var("HOME", "./tests/fixtures");
+
+    let mut cmd = Command::cargo_bin("strikes")?;
+    cmd.arg("strike").arg("guenther");
+    cmd.assert().success();
+
+    let _ = fs::remove_dir_all("./tests/fixtures/.strikes")?;
 
     Ok(())
 }
