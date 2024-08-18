@@ -38,7 +38,6 @@ jobs:
           toolchain: ${{ matrix.rust }}
 
       - name: Get release version number
-        id: get_release_version
         if: env.VERSION == ''
         run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
@@ -67,8 +66,8 @@ jobs:
         run: cross build --release --target ${{ matrix.target }}
 
       - name: Create release directory
-        run: mkdir -p artifacts/strikes/strikes-${{ steps.get_release_version.outputs.VERSION }}-${{ matrix.target }}
+        run: mkdir -p artifacts/strikes/strikes-${{ env.VERSION }}-${{ matrix.target }}
 
       - name: Move binary to release directory
-        run: mv target/${{ matrix.target }}/release/strikes/ artifacts/strikes/strikes-${{ steps.get_release_version.outputs.VERSION }}-${{ matrix.target }}
+        run: mv target/${{ matrix.target }}/release/strikes artifacts/strikes/strikes-${{ env.VERSION }}-${{ matrix.target }}
 
