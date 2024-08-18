@@ -84,7 +84,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: strikes-${{ env.VERSION }}-${{ matrix.target }}
-          path: ./artifacts
+          path: ./artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}.tar.gz
   
   release:
     name: Release artifacts
