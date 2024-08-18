@@ -111,7 +111,7 @@ jobs:
       - name: Download x86_64_apple_darwin tarball
         uses: actions/download-artifact@v4
         with:
-          name: strikes-${{ env.VERSION }}-x86_64-apple-darwin.tar.gz
+          name: strikes-${{ env.VERSION }}-x86_64-apple-darwin
 
       - name: Download x86_64 tarball
         uses: actions/download-artifact@v4
