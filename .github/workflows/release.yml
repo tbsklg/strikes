@@ -74,3 +74,9 @@ jobs:
       - name: Create tarball
         run: tar -czf artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}.tar.gz -C artifacts/strikes strikes-${{ env.VERSION }}-${{ matrix.target }}
 
+      - name: Upload tarball
+        uses: actions/upload-artifact@v2
+        with:
+          name: strikes-${{ env.VERSION }}-${{ matrix.target }}
+          path: /artifacts
+
