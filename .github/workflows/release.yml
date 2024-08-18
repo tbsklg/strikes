@@ -14,8 +14,8 @@ on:
     - "[0-9]+.[0-9]+.[0-9]+-*"
 
 jobs:
-  create-release:
-    name: Create release
+  build:
+    name: Build artifacts
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -79,4 +79,34 @@ jobs:
         with:
           name: strikes-${{ env.VERSION }}-${{ matrix.target }}
           path: /artifacts/strikes
+  
+  release:
+    name: Release artifacts
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Get release version number
+        if: env.VERSION == ''
+        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
+      - name: Download arm64 tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: strikes-${{ env.VERSION }}-aarch64-unknown-linux-musl
+
+      - name: Download x86_64 tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: strikes-${{ env.VERSION }}-x86_64-unknown-linux-musl
+
+      - name: Release arm64 tarball
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            strikes-${{ env.VERSION }}-aarch64-unknown-linux-musl.tar.gz
+      
+      - name: Release x86_64 tarball
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            strikes-${{ env.VERSION }}-x86_64-unknown-linux-musl.tar.gz
