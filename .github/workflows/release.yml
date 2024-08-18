@@ -50,6 +50,12 @@ jobs:
             exit 1
           fi
 
+      - name: Install C compilation tooling (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install clang gcc-aarch64-linux-gnu musl-tools -y
+
       - name: Add rustup target
         run: rustup target add ${{ matrix.target }}
       
