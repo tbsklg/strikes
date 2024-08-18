@@ -3,7 +3,7 @@ use serde_json::{json, Value};
 pub fn add_strike(name: &str, db_path: &std::path::PathBuf) -> Value {
     let db = std::fs::read_to_string(db_path).unwrap_or_else(|_| json!({}).to_string());
     let updated_db = update_strikes(name, serde_json::from_str(&db).unwrap());
-    
+
     if !db_path.exists() {
         std::fs::create_dir_all(db_path.parent().unwrap()).unwrap();
     }
