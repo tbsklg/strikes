@@ -31,8 +31,6 @@ jobs:
     
     steps:
       - uses: actions/checkout@v4
-        with:
-          sparse-checkout: cli-client
       - uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.rust }}
@@ -40,6 +38,7 @@ jobs:
       - name: Get release version number
         if: env.VERSION == ''
         run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+        working-directory: cli-client
 
       - name: Check that tag version and Cargo.toml version are the same
         shell: bash
@@ -48,15 +47,18 @@ jobs:
             echo "version does not match Cargo.toml" >&2
             exit 1
           fi
+        working-directory: cli-client
 
       - name: Install C compilation tooling (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update -y
           sudo apt-get install clang gcc-aarch64-linux-gnu musl-tools -y
+        working-directory: cli-client
 
       - name: Add rustup target
         run: rustup target add ${{ matrix.target }}
+        working-directory: cli-client
       
       - uses: taiki-e/install-action@v2
         with:
@@ -64,27 +66,34 @@ jobs:
       
       - name: Build release
         run: cross build --release --target ${{ matrix.target }}
+        working-directory: cli-client
 
       - name: Create release directory
         run: mkdir -p artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}
+        working-directory: cli-client
 
       - name: Move binary to release directory
         run: mv target/${{ matrix.target }}/release/strikes artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}
+        working-directory: cli-client
 
       - name: Create tarball
         run: tar -czf ./artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}.tar.gz -C artifacts strikes-${{ env.VERSION }}-${{ matrix.target }}
+        working-directory: cli-client
       
       - name: List files for debugging
         run: ls -la
+        working-directory: cli-client
 
       - name: List files in artifacts directory
         run: ls -la ./artifacts
+        working-directory: cli-client
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
         with:
           name: strikes-${{ env.VERSION }}-${{ matrix.target }}
           path: ./cli-client/artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}.tar.gz
+        working-directory: cli-client
   
   release:
     name: Release artifacts
