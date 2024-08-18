@@ -1,0 +1,137 @@
+name: Release
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: write
+
+on:
+  push:
+    tags:
+    - "[0-9]+.[0-9]+.[0-9]+-*"
+
+jobs:
+  build:
+    name: Build artifact
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-musl
+            os: ubuntu-latest
+            rust: stable
+          - target: aarch64-unknown-linux-musl
+            os: ubuntu-latest
+            rust: stable
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            rust: stable
+    
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ matrix.rust }}
+
+      - name: Get release version number
+        if: env.VERSION == ''
+        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+        working-directory: cli-client
+
+      - name: Check that tag version and Cargo.toml version are the same
+        shell: bash
+        run: |
+          if ! grep -q "version = \"$VERSION\"" Cargo.toml; then
+            echo "version does not match Cargo.toml" >&2
+            exit 1
+          fi
+        working-directory: cli-client
+
+      - name: Install C compilation tooling (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install clang gcc-aarch64-linux-gnu musl-tools -y
+        working-directory: cli-client
+
+      - name: Add rustup target
+        run: rustup target add ${{ matrix.target }}
+        working-directory: cli-client
+      
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cross
+      
+      - name: Build release
+        run: cross build --release --target ${{ matrix.target }}
+        working-directory: cli-client
+
+      - name: Create release directory
+        run: mkdir -p artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}
+        working-directory: cli-client
+
+      - name: Move binary to release directory
+        run: mv target/${{ matrix.target }}/release/strikes artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}
+        working-directory: cli-client
+
+      - name: Create tarball
+        run: tar -czf ./artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}.tar.gz -C artifacts strikes-${{ env.VERSION }}-${{ matrix.target }}
+        working-directory: cli-client
+
+      - name: Upload tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: strikes-${{ env.VERSION }}-${{ matrix.target }}
+          path: ./cli-client/artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}.tar.gz
+  
+  release:
+    name: Release artifacts
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get release version number
+        if: env.VERSION == ''
+        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Debug
+        uses: actions/download-artifact@v4
+
+      - name: List files
+        run: ls -R
+
+      - name: Download arm64 tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: strikes-${{ env.VERSION }}-aarch64-unknown-linux-musl
+
+      - name: Download x86_64_apple_darwin tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: strikes-${{ env.VERSION }}-x86_64-apple-darwin
+
+      - name: Download x86_64 tarball
+        uses: actions/download-artifact@v4
+        with:
+          name: strikes-${{ env.VERSION }}-x86_64-unknown-linux-musl 
+
+      - name: Release arm64 tarball
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            strikes-${{ env.VERSION }}-aarch64-unknown-linux-musl.tar.gz
+      
+      - name: Release x86_64_apple_darwin tarball
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            strikes-${{ env.VERSION }}-x86_64-apple-darwin.tar.gz
+
+      - name: Release x86_64 tarball
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            strikes-${{ env.VERSION }}-x86_64-unknown-linux-musl.tar.gz

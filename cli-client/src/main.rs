@@ -1,20 +1,61 @@
-use clap::Parser;
+use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use strikes::client::check_health;
-use strikes::config::Config;
+use strikes::{configuration::get_configuration, local_client::add_strike};
+
+#[derive(Subcommand, Clone, Debug)]
+enum Command {
+    #[command(about = "Adds a strike to the specified person.")]
+    Strike { name: String },
+    #[command(about = "Lists all the persons and the number of strikes they have")]
+    Ls,
+}
 
 #[derive(Debug, Parser)]
+#[command(
+    name = "Strikes CLI",
+    version = "0.1",
+    about = "Manage strikes for people",
+    long_about = "This is a command-line tool for blaming people."
+)]
 struct Cli {
-    name: String,
+    #[arg(
+        short,
+        long,
+        help = "Specify the path to the configuration file where the strikes are stored"
+    )]
     config_path: Option<std::path::PathBuf>,
+
+    #[arg(
+        short,
+        long,
+        help = "Specify the path to the database json file (i.e. db.json)"
+    )]
+    db_path: Option<std::path::PathBuf>,
+    #[command(subcommand)]
+    command: Option<Command>,
 }
 
 #[tokio::main]
 async fn main() {
     let args = Cli::parse();
-    let home = std::env::var("HOME").unwrap();
-    let path = PathBuf::from(home).join(".strike");
-    let config = Config::parse(args.config_path.unwrap_or(path));
 
-    check_health(config.base_url, config.api_key).await;
+    let home = &std::env::var("HOME").unwrap();
+    let config_path = PathBuf::from(home).join(".strikes/configuration.yaml");
+    let config = get_configuration(args.config_path.unwrap_or(config_path)).unwrap_or_default();
+
+    // check_health(config.base_url, config.api_key).await;
+    let db_path = args.db_path.unwrap_or(config.local.map_or_else(
+        || PathBuf::from(home).join(".strikes/db.json"),
+        |local| local.db_path,
+    ));
+
+    match args.command.unwrap() {
+        Command::Strike { name } => {
+            add_strike(&name, &db_path);
+        }
+        Command::Ls => {
+            let db = std::fs::read_to_string(&db_path).unwrap_or_else(|_| "{}".to_string());
+            println!("{}", db);
+        }
+    }
 }
