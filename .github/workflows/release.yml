@@ -14,7 +14,6 @@ on:
 
 jobs:
   build:
-    id: build
     name: Build artifact
     runs-on: ${{ matrix.os }}
     strategy:
