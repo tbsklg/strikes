@@ -49,6 +49,9 @@ jobs:
             echo "version does not match Cargo.toml" >&2
             exit 1
           fi
+
+      - name: Add rustup target
+        run: rustup target add ${{ matrix.target }}
       
       - uses: taiki-e/install-action@v2
         with:
