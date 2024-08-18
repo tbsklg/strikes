@@ -79,21 +79,12 @@ jobs:
       - name: Create tarball
         run: tar -czf ./artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}.tar.gz -C artifacts strikes-${{ env.VERSION }}-${{ matrix.target }}
         working-directory: cli-client
-      
-      - name: List files for debugging
-        run: ls -la
-        working-directory: cli-client
-
-      - name: List files in artifacts directory
-        run: ls -la ./artifacts
-        working-directory: cli-client
 
       - name: Upload tarball
         uses: actions/upload-artifact@v4
         with:
           name: strikes-${{ env.VERSION }}-${{ matrix.target }}
           path: ./cli-client/artifacts/strikes-${{ env.VERSION }}-${{ matrix.target }}.tar.gz
-        working-directory: cli-client
   
   release:
     name: Release artifacts
