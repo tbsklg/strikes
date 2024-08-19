@@ -16,7 +16,7 @@ fn missing_subcommand() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn add_strike() -> Result<(), Box<dyn std::error::Error>> {
+fn it_should_add_strike() -> Result<(), Box<dyn std::error::Error>> {
     let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
     file.write_str("{}")?;
 
@@ -32,20 +32,26 @@ fn add_strike() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn list_strikes() -> Result<(), Box<dyn std::error::Error>> {
+fn it_should_list_strikes_in_descending_order() -> Result<(), Box<dyn std::error::Error>> {
     let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
-    file.write_str("{\"guenther\": 1}")?;
+    file.write_str("{\"guenther\": 1, \"heinz\": 2}")?;
 
     let mut cmd = Command::cargo_bin("strikes")?;
 
     cmd.arg("--db-path").arg(file.path()).arg("ls");
-    cmd.assert().success().stdout("{\"guenther\": 1}\n");
+
+    let expected_output = "Tarnished  | Strikes    |\n\
+                           heinz      | 2          |\n\
+                           guenther   | 1          |\n";
+
+    cmd.assert().success().stdout(expected_output);
 
     Ok(())
 }
 
 #[test]
-fn configuration_directory_not_exists() -> Result<(), Box<dyn std::error::Error>> {
+fn it_should_use_default_directory_if_no_configuration_directory_exists(
+) -> Result<(), Box<dyn std::error::Error>> {
     env::set_var("HOME", "./tests/fixtures");
 
     let mut cmd = Command::cargo_bin("strikes")?;

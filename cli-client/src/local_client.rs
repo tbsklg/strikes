@@ -1,54 +1,118 @@
-use serde_json::{json, Value};
+use std::collections::HashMap;
 
-pub fn add_strike(name: &str, db_path: &std::path::PathBuf) -> Value {
-    let db = std::fs::read_to_string(db_path).unwrap_or_else(|_| json!({}).to_string());
-    let updated_db = update_strikes(name, serde_json::from_str(&db).unwrap());
+use serde_json::json;
+
+#[derive(Debug, PartialEq, Clone)]
+pub struct Tarnished {
+    pub name: String,
+    pub strikes: u8,
+}
+
+pub fn add_strike(name: &str, db_path: &std::path::PathBuf) -> HashMap<String, i8> {
+    let raw = std::fs::read_to_string(db_path).unwrap_or_else(|_| json!({}).to_string());
+    let db = update_strikes(name, &mut serde_json::from_str(&raw).unwrap());
 
     if !db_path.exists() {
         std::fs::create_dir_all(db_path.parent().unwrap()).unwrap();
     }
 
-    std::fs::write(db_path, serde_json::to_string_pretty(&updated_db).unwrap()).unwrap();
+    std::fs::write(db_path, serde_json::to_string_pretty(&db).unwrap()).unwrap();
 
-    updated_db
+    db
 }
 
-fn update_strikes(name: &str, db: Value) -> Value {
-    let mut db = db.as_object().unwrap().clone();
-    let count = db.get(name).unwrap_or(&Value::Null).as_u64().unwrap_or(0);
-    db.insert(name.to_string(), Value::from(count + 1));
+pub fn get_tarnished(db_path: &std::path::PathBuf) -> Vec<Tarnished> {
+    let raw = std::fs::read_to_string(db_path).unwrap_or_else(|_| json!({}).to_string());
+    let db: HashMap<String, u8> = serde_json::from_str(&raw).unwrap_or(HashMap::new());
 
-    Value::Object(db)
+    sort_desc_by_strike(as_tarnished(db)).into_iter().collect()
+}
+
+fn update_strikes(name: &str, db: &mut HashMap<String, i8>) -> HashMap<String, i8> {
+    let count = db.get(name).unwrap_or(&0);
+    db.insert(name.to_string(), count + 1);
+
+    db.clone()
+}
+
+fn sort_desc_by_strike(tarnished: Vec<Tarnished>) -> Vec<Tarnished> {
+    let mut tarnished = tarnished.clone();
+    tarnished.sort_by(|a, b| b.strikes.partial_cmp(&a.strikes).unwrap());
+    tarnished
+}
+
+fn as_tarnished(db: HashMap<String, u8>) -> Vec<Tarnished> {
+    db.iter()
+        .map(|(name, strikes)| Tarnished {
+            name: name.to_string(),
+            strikes: *strikes,
+        })
+        .collect()
 }
 
 #[cfg(test)]
 mod unit_tests {
     use super::*;
-    use serde_json::json;
 
     #[test]
     fn it_adds_a_strike_for_a_new_name() {
-        let db = update_strikes("guenther", json!({}));
-        assert_eq!(db, json!({"guenther": 1}));
+        let db = update_strikes("guenther", &mut HashMap::new());
+        assert_eq!(db, [("guenther".to_string(), 1)].iter().cloned().collect());
     }
 
     #[test]
     fn it_adds_a_strike_for_an_existing_name() {
-        let db = update_strikes("guenther", json!({"guenther": 1}));
-        assert_eq!(db, json!({"guenther": 2}));
+        let db = update_strikes("guenther", &mut HashMap::new());
+        assert_eq!(db, [("guenther".to_string(), 1)].iter().cloned().collect());
     }
 
     #[test]
     fn it_adds_a_strike_for_an_existing_name_with_other_names() {
-        let db = update_strikes("guenther", json!({"guenther": 1, "hans": 2}));
-        assert_eq!(db, json!({"guenther": 2, "hans": 2}));
+        let db = update_strikes("guenther", &mut HashMap::from([("hans".to_string(), 2)]));
+        assert_eq!(
+            db,
+            [("guenther".to_string(), 1), ("hans".to_string(), 2)]
+                .iter()
+                .cloned()
+                .collect()
+        );
+    }
+
+    #[test]
+    fn it_should_return_strikes_in_descending_order() {
+        let raw = &mut [
+            ("guenther".to_string(), 2),
+            ("heinz".to_string(), 1),
+            ("hans".to_string(), 3),
+        ]
+        .iter()
+        .cloned()
+        .collect::<HashMap<String, u8>>();
+        let tarnished = sort_desc_by_strike(as_tarnished(raw.clone()));
+
+        assert_eq!(
+            tarnished,
+            vec![
+                Tarnished {
+                    name: "hans".to_string(),
+                    strikes: 3
+                },
+                Tarnished {
+                    name: "guenther".to_string(),
+                    strikes: 2
+                },
+                Tarnished {
+                    name: "heinz".to_string(),
+                    strikes: 1
+                }
+            ]
+        );
     }
 }
 
 #[cfg(test)]
 mod integration_tests {
     use super::*;
-    use serde_json::json;
     use std::path::PathBuf;
 
     #[test]
@@ -59,7 +123,7 @@ mod integration_tests {
 
         std::fs::remove_file(db_path).unwrap();
 
-        assert_eq!(db, json!({"guenther": 1}));
+        assert_eq!(db, [("guenther".to_string(), 1)].iter().cloned().collect());
     }
 
     #[test]
@@ -72,6 +136,12 @@ mod integration_tests {
 
         std::fs::remove_file(db_path).unwrap();
 
-        assert_eq!(db, json!({"guenther": 2, "heinz": 1}));
+        assert_eq!(
+            db,
+            [("guenther".to_string(), 2), ("heinz".to_string(), 1)]
+                .iter()
+                .cloned()
+                .collect()
+        );
     }
 }

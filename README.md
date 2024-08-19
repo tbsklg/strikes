@@ -1,4 +1,15 @@
 # Strikes
+## Installation
+Currently only the binaries are available. You can pick the release for your platform from the [releases page](https://github.com/tbsklg/strikes/releases).
+The binary is a standalone executable and does not require any installation.
+
+Example for the Linux binary:
+### Linux
+```bash
+tar -xvzf strikes-0.0.1-alpha-x86_64-unknown-linux-musl.tar.gz -C <path-to-install>
+```
+
+After extracting the binary, you may need to add the path to your PATH environment variable.
 
 ## Usage
 - Add a strike to a user
@@ -22,7 +33,8 @@ The argument has precedence over the configuration file.
 The configuration file needs to be a yaml file.
 
 ```yaml
-db_path: /path/to/db.json
+local:
+    db_path: /path/to/db.json
 ```
 
 The following command will create a database (db.json) in the current directory.
