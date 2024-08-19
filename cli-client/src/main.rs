@@ -55,6 +55,12 @@ async fn main() {
         }
         Command::Ls => {
             let db = std::fs::read_to_string(&db_path).unwrap_or_else(|_| "{}".to_string());
+            println!(
+                "{0: <10} | {1: <10} |",
+                "Tarnished", "Strikes"
+            );
+            println!("{0: <10} | {1: <10} |", "Guenther", 0);
+         
             println!("{}", db);
         }
     }
