@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde_json::json;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Tarnished {
     pub name: String,
     pub strikes: u8,
@@ -25,7 +25,7 @@ pub fn get_tarnished(db_path: &std::path::PathBuf) -> Vec<Tarnished> {
     let raw = std::fs::read_to_string(db_path).unwrap_or_else(|_| json!({}).to_string());
     let db: HashMap<String, u8> = serde_json::from_str(&raw).unwrap_or(HashMap::new());
 
-    sort_desc_by_strike(as_tarnished(db)).into_iter().rev().collect()
+    sort_desc_by_strike(as_tarnished(db)).into_iter().collect()
 }
 
 fn update_strikes(name: &str, db: &mut HashMap<String, i8>) -> HashMap<String, i8> {
@@ -36,8 +36,8 @@ fn update_strikes(name: &str, db: &mut HashMap<String, i8>) -> HashMap<String, i
 }
 
 fn sort_desc_by_strike(tarnished: Vec<Tarnished>) -> Vec<Tarnished> {
-    let mut tarnished = tarnished;
-    tarnished.sort_by(|a, b| b.strikes.cmp(&a.strikes));
+    let mut tarnished = tarnished.clone();
+    tarnished.sort_by(|a, b| b.strikes.partial_cmp(&a.strikes).unwrap());
     tarnished
 }
 
@@ -80,11 +80,15 @@ mod unit_tests {
     }
 
     #[test]
-    fn it_should_read_strikes_as_tarnished() {
-        let raw = &mut [("guenther".to_string(), 2), ("hans".to_string(), 3)]
-            .iter()
-            .cloned()
-            .collect::<HashMap<String, u8>>();
+    fn it_should_return_strikes_in_descending_order() {
+        let raw = &mut [
+            ("guenther".to_string(), 2),
+            ("heinz".to_string(), 1),
+            ("hans".to_string(), 3),
+        ]
+        .iter()
+        .cloned()
+        .collect::<HashMap<String, u8>>();
         let tarnished = sort_desc_by_strike(as_tarnished(raw.clone()));
 
         assert_eq!(
@@ -98,6 +102,10 @@ mod unit_tests {
                     name: "guenther".to_string(),
                     strikes: 2
                 },
+                Tarnished {
+                    name: "heinz".to_string(),
+                    strikes: 1
+                }
             ]
         );
     }

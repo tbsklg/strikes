@@ -1,6 +1,10 @@
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use strikes::{configuration::get_configuration, local_client::add_strike};
+use strikes::{
+    configuration::get_configuration,
+    local_client::{add_strike, get_tarnished},
+    output::print_as_table,
+};
 
 #[derive(Subcommand, Clone, Debug)]
 enum Command {
@@ -52,16 +56,10 @@ async fn main() {
     match args.command.unwrap() {
         Command::Strike { name } => {
             add_strike(&name, &db_path);
+            println!("{} has been tarnished!", name);
         }
         Command::Ls => {
-            let db = std::fs::read_to_string(&db_path).unwrap_or_else(|_| "{}".to_string());
-            println!(
-                "{0: <10} | {1: <10} |",
-                "Tarnished", "Strikes"
-            );
-            println!("{0: <10} | {1: <10} |", "Guenther", 0);
-         
-            println!("{}", db);
+            print_as_table(get_tarnished(&db_path));
         }
     }
 }
