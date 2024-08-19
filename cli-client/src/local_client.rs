@@ -45,7 +45,7 @@ fn as_tarnished(db: HashMap<String, u8>) -> Vec<Tarnished> {
     db.iter()
         .map(|(name, strikes)| Tarnished {
             name: name.to_string(),
-            strikes: *strikes as u8,
+            strikes: *strikes,
         })
         .collect()
 }
