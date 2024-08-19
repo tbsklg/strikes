@@ -6,8 +6,10 @@ The binary is a standalone executable and does not require any installation.
 Example for the Linux binary:
 ### Linux
 ```bash
-tar -xvzf strikes-0.0.1-alpha-x86_64-unknown-linux-musl.tar.gz -C /usr/local/bin # or any other directory in your PATH
+tar -xvzf strikes-0.0.1-alpha-x86_64-unknown-linux-musl.tar.gz -C <path-to-install>
 ```
+
+After extracting the binary, you may need to add the path to your PATH environment variable.
 
 ## Usage
 - Add a strike to a user
