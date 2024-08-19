@@ -52,7 +52,6 @@ fn as_tarnished(db: HashMap<String, u8>) -> Vec<Tarnished> {
 
 #[cfg(test)]
 mod unit_tests {
-
     use super::*;
 
     #[test]
