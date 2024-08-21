@@ -1,6 +1,6 @@
 [package]
 name = "strikes"
-version = "0.0.2-alpha"
+version = "0.0.2"
 edition = "2021"
 
 [lib]

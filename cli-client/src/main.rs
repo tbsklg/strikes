@@ -17,7 +17,7 @@ enum Command {
 #[derive(Debug, Parser)]
 #[command(
     name = "Strikes CLI",
-    version = "0.0.2-alpha",
+    version = "0.0.2",
     about = "Manage strikes for people",
     long_about = "This is a command-line tool for blaming people."
 )]
