@@ -1,7 +1,14 @@
 # Strikes
 ## Installation
-Currently only the binaries are available. You can pick the release for your platform from the [releases page](https://github.com/tbsklg/strikes/releases).
-The binary is a standalone executable and does not require any installation.
+
+On macOS using homebrew:
+```bash
+brew tap tbsklg/strikes
+brew install strikes
+```
+
+There are specific binaries available. You can choose the release for your platform from the [releases page](https://github.com/tbsklg/strikes/releases).
+The binary is a standalone executable and does not require installation.
 
 Example for the Linux binary:
 ### Linux
