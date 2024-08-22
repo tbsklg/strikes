@@ -2,24 +2,26 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use strikes::{
     configuration::get_configuration,
-    local_client::{add_strike, get_tarnished},
+    local_client::{add_strike, clear_strikes, get_tarnished},
     output::print_as_table,
 };
 
 #[derive(Subcommand, Clone, Debug)]
 enum Command {
-    #[command(about = "Adds a strike to the specified person.")]
+    #[command(about = "Add a strike", alias = "s")]
     Strike { name: String },
-    #[command(about = "Lists all the persons and the number of strikes they have")]
+    #[command(about = "List all strikes")]
     Ls,
+    #[command(about = "Clear strikes", alias = "c")]
+    Clear,
 }
 
 #[derive(Debug, Parser)]
 #[command(
     name = "Strikes CLI",
-    version = "0.0.2",
-    about = "Manage strikes for people",
-    long_about = "This is a command-line tool for blaming people."
+    version = "0.1.0",
+    about = "Track and assign strikes",
+    long_about = "Simple CLI tool to track and assign strikes"
 )]
 struct Cli {
     #[arg(
@@ -59,7 +61,18 @@ async fn main() {
             println!("{} has been tarnished!", name);
         }
         Command::Ls => {
-            print_as_table(get_tarnished(&db_path));
+            let tarnished = get_tarnished(&db_path);
+
+            if tarnished.is_empty() {
+                println!("No one has been tarnished yet!");
+                return;
+            }
+
+            print_as_table(tarnished);
+        }
+        Command::Clear => {
+            clear_strikes(&db_path);
+            println!("All strikes have been cleared!");
         }
     }
 }
