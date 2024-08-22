@@ -1,7 +1,7 @@
 use assert_cmd::prelude::*;
 use assert_fs::fixture::FileWriteStr;
 use predicates::prelude::*;
-use std::{env, fs, process::Command};
+use std::process::Command;
 
 #[test]
 fn missing_subcommand() -> Result<(), Box<dyn std::error::Error>> {
@@ -52,13 +52,46 @@ fn it_should_list_strikes_in_descending_order() -> Result<(), Box<dyn std::error
 #[test]
 fn it_should_use_default_directory_if_no_configuration_directory_exists(
 ) -> Result<(), Box<dyn std::error::Error>> {
-    env::set_var("HOME", "./tests/fixtures");
+    let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
 
     let mut cmd = Command::cargo_bin("strikes")?;
-    cmd.arg("strike").arg("guenther");
+    cmd.arg("--db-path")
+        .arg(file.path())
+        .arg("strike")
+        .arg("guenther");
     cmd.assert().success();
 
-    let _ = fs::remove_dir_all("./tests/fixtures/.strikes")?;
+    Ok(())
+}
+
+#[test]
+fn it_should_clear_all_strikes() -> Result<(), Box<dyn std::error::Error>> {
+    let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
+
+    let mut cmd = Command::cargo_bin("strikes")?;
+    cmd.arg("--db-path")
+        .arg(file.path())
+        .arg("strike")
+        .arg("guenther");
+    cmd.assert().success();
+
+    let mut cmd = Command::cargo_bin("strikes")?;
+    cmd.arg("--db-path").arg(file.path()).arg("ls");
+    cmd.assert()
+        .success()
+        .stdout("Tarnished  | Strikes    |\nguenther   | 1          |\n");
+
+    let mut cmd = Command::cargo_bin("strikes")?;
+    cmd.arg("--db-path").arg(file.path()).arg("clear");
+    cmd.assert()
+        .success()
+        .stdout("All strikes have been cleared!\n");
+
+    let mut cmd = Command::cargo_bin("strikes")?;
+    cmd.arg("--db-path").arg(file.path()).arg("ls");
+    cmd.assert()
+        .success()
+        .stdout("No one has been tarnished yet!\n");
 
     Ok(())
 }

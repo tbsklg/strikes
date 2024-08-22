@@ -28,6 +28,12 @@ pub fn get_tarnished(db_path: &std::path::PathBuf) -> Vec<Tarnished> {
     sort_desc_by_strike(as_tarnished(db)).into_iter().collect()
 }
 
+pub fn clear_strikes(db_path: &std::path::PathBuf) {
+    if db_path.exists() {
+        std::fs::write(db_path, json!({}).to_string()).unwrap();
+    }
+}
+
 fn update_strikes(name: &str, db: &mut HashMap<String, i8>) -> HashMap<String, i8> {
     let count = db.get(name).unwrap_or(&0);
     db.insert(name.to_string(), count + 1);
@@ -55,19 +61,19 @@ mod unit_tests {
     use super::*;
 
     #[test]
-    fn it_adds_a_strike_for_a_new_name() {
+    fn it_should_add_a_strike() {
         let db = update_strikes("guenther", &mut HashMap::new());
         assert_eq!(db, [("guenther".to_string(), 1)].iter().cloned().collect());
     }
 
     #[test]
-    fn it_adds_a_strike_for_an_existing_name() {
+    fn it_should_add_a_strike_for_an_existing_name() {
         let db = update_strikes("guenther", &mut HashMap::new());
         assert_eq!(db, [("guenther".to_string(), 1)].iter().cloned().collect());
     }
 
     #[test]
-    fn it_adds_a_strike_for_an_existing_name_with_other_names() {
+    fn it_should_add_a_strike_for_an_existing_name_with_other_names_already_tarnished() {
         let db = update_strikes("guenther", &mut HashMap::from([("hans".to_string(), 2)]));
         assert_eq!(
             db,
@@ -116,7 +122,7 @@ mod integration_tests {
     use std::path::PathBuf;
 
     #[test]
-    fn it_adds_a_strike() {
+    fn it_should_add_a_strike() {
         let db_path = PathBuf::from("tests/fixtures/db.json");
 
         let db = add_strike("guenther", &db_path);
@@ -127,7 +133,7 @@ mod integration_tests {
     }
 
     #[test]
-    fn it_adds_a_strike_to_an_existing_db() {
+    fn it_should_add_a_strike_to_an_existing_db() {
         let db_path = PathBuf::from("tests/fixtures/db_0.json");
         add_strike("guenther", &db_path);
         add_strike("heinz", &db_path);
@@ -143,5 +149,15 @@ mod integration_tests {
                 .cloned()
                 .collect()
         );
+    }
+
+    #[test]
+    fn it_should_clear_strikes() {
+        let db_path = PathBuf::from("tests/fixtures/db.json");
+        add_strike("guenther", &db_path);
+
+        clear_strikes(&db_path);
+
+        assert!(get_tarnished(&db_path).is_empty());
     }
 }
