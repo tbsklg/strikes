@@ -29,6 +29,11 @@ strikes strike <user>
 strikes ls
 ```
 
+- Clear all strikes
+```bash
+strikes clear
+```
+
 ## Use locally only
 You can use the local client without a remote server.
 It will generate a JSON file where the strikes are stored. 
