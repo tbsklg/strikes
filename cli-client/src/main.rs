@@ -31,6 +31,10 @@ async fn main() {
             client.clear_strikes();
             println!("All strikes have been cleared!");
         }
+        Command::CheckHealth => match client.check_health() {
+            Ok(_) => println!("Everything is fine!"),
+            Err(_) => println!("Client is not healthy!"),
+        },
     }
 }
 

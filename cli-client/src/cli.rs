@@ -8,6 +8,8 @@ pub enum Command {
     Ls,
     #[command(about = "Clear strikes", alias = "c")]
     Clear,
+    #[command(about = "Check health of the client", alias = "h")]
+    CheckHealth,
 }
 
 #[derive(Clone, Debug, Parser)]

@@ -2,19 +2,19 @@ use std::path::PathBuf;
 
 use crate::cli::Cli;
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct Settings {
     pub remote: Option<RemoteSettings>,
     pub local: Option<LocalSettings>,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct RemoteSettings {
     pub api_key: String,
     pub base_url: String,
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct LocalSettings {
     pub db_path: std::path::PathBuf,
 }
@@ -39,17 +39,21 @@ pub fn get_configuration(args: &Cli) -> Settings {
     let config_path = args
         .config_path
         .clone()
-        .unwrap_or_else(|| PathBuf::from(home).join(".strikes/config.yaml"));
+        .unwrap_or_else(|| PathBuf::from(home).join(".strikes/configuration.yaml"));
 
-    let settings = config::Config::builder()
-        .add_source(config::File::new(
-            config_path.to_str().unwrap(),
-            config::FileFormat::Yaml,
-        ))
-        .build();
+    let settings = config::Config::builder().add_source(config::File::new(
+        config_path.to_str().unwrap(),
+        config::FileFormat::Yaml,
+    ));
 
-    match settings {
-        Ok(settings) => settings.try_deserialize::<Settings>().unwrap_or_default(),
+    match settings.build() {
+        Ok(settings) => settings.try_deserialize().map_or_else(
+            |_| Settings::default(),
+            |settings: Settings| match (&settings.remote, &settings.local) {
+                (None, None) => Settings::default(),
+                _ => settings,
+            },
+        ),
         Err(_) => Settings::default(),
     }
 }
