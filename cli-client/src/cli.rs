@@ -15,7 +15,7 @@ pub enum Command {
 #[derive(Clone, Debug, Parser)]
 #[command(
     name = "Strikes CLI",
-    version = "0.1.0",
+    version = "0.2.1",
     about = "Track and assign strikes",
     long_about = "Simple CLI tool to track and assign strikes"
 )]
@@ -23,7 +23,7 @@ pub struct Cli {
     #[arg(
         short,
         long,
-        help = "Specify the path to the configuration file where the strikes are stored"
+        help = "Specify the path to the configuration file",
     )]
     pub config_path: Option<std::path::PathBuf>,
 
