@@ -20,11 +20,7 @@ pub enum Command {
     long_about = "Simple CLI tool to track and assign strikes"
 )]
 pub struct Cli {
-    #[arg(
-        short,
-        long,
-        help = "Specify the path to the configuration file",
-    )]
+    #[arg(short, long, help = "Specify the path to the configuration file")]
     pub config_path: Option<std::path::PathBuf>,
 
     #[command(subcommand)]
