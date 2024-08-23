@@ -1,4 +1,5 @@
+pub mod cli;
+pub mod clients;
 pub mod configuration;
-pub mod local_client;
 pub mod output;
-pub mod remote_client;
+pub mod tarnished;

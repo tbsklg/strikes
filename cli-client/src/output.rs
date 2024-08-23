@@ -1,4 +1,4 @@
-use crate::local_client::Tarnished;
+use crate::tarnished::Tarnished;
 
 pub fn print_as_table(tarnished: Vec<Tarnished>) {
     println!("{0: <10} | {1: <10} |", "Tarnished", "Strikes");
