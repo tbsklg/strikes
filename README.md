@@ -49,9 +49,6 @@ local:
     db_path: /path/to/db.json
 ```
 
-The following command will create a database (db.json) in the current directory.
-
 ```bash
-strikes --db-path ./my-db.json strike <user>
+strikes --config-path /path/to/configuration.yaml strike guenther
 ```
-
