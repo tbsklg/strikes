@@ -45,6 +45,7 @@ impl StrikeClient for LocalClient {
     }
 
     async fn check_health(&self) -> Result<(), String> {
+        println!("Checking health for local client");
         Ok(())
     }
 }

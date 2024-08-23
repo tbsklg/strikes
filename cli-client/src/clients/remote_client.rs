@@ -39,9 +39,10 @@ struct HttpClient {
 
 impl HttpClient {
     async fn get_health(&self) -> Result<(), String> {
-        let client = reqwest::Client::new();
+        println!("Checking health for remote client");
 
-        println!("Checking health at: {}/health", &self.base_url);
+        println!("Ping URL: {}/health", &self.base_url);
+        let client = reqwest::Client::new();
         let response = client
             .get(format!("{}/health", &self.base_url))
             .header("x-api-key", &self.api_key)
@@ -56,4 +57,3 @@ impl HttpClient {
         }
     }
 }
-
