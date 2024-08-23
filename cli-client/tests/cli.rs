@@ -4,7 +4,7 @@ use predicates::prelude::*;
 use std::process::Command;
 
 #[test]
-fn missing_subcommand() -> Result<(), Box<dyn std::error::Error>> {
+fn it_should_recognize_missing_subcommand() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("strikes")?;
 
     cmd.arg("guenther");
@@ -17,13 +17,20 @@ fn missing_subcommand() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn it_should_add_strike() -> Result<(), Box<dyn std::error::Error>> {
-    let file = assert_fs::NamedTempFile::new("./tests/fixtures/configuration.yaml")?;
-    file.write_str("{\"local\": {\"db_path\": \"./tests/fixtures/db.json\"}}")?;
+    let db_file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
+    let config_file = assert_fs::NamedTempFile::new("./tests/fixtures/configuration.yaml")?;
+    config_file.write_str(
+        format!(
+            "{{\"local\": {{\"db_path\": \"{}\"}}}}",
+            db_file.path().to_str().unwrap()
+        )
+        .as_str(),
+    )?;
 
     let mut cmd = Command::cargo_bin("strikes")?;
 
     cmd.arg("--config-path")
-        .arg(file.path())
+        .arg(config_file.path())
         .arg("strike")
         .arg("guenther");
     cmd.assert().success();
