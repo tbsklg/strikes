@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use serde_json::json;
+use std::collections::HashMap;
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct Tarnished {
@@ -8,52 +7,66 @@ pub struct Tarnished {
     pub strikes: u8,
 }
 
-pub fn add_strike(name: &str, db_path: &std::path::PathBuf) -> HashMap<String, i8> {
-    let raw = std::fs::read_to_string(db_path).unwrap_or_else(|_| json!({}).to_string());
-    let db = update_strikes(name, &mut serde_json::from_str(&raw).unwrap());
-
-    if !db_path.exists() {
-        std::fs::create_dir_all(db_path.parent().unwrap()).unwrap();
+impl Tarnished {
+    fn sort_desc_by_strike(tarnished: Vec<Tarnished>) -> Vec<Tarnished> {
+        let mut tarnished = tarnished.clone();
+        tarnished.sort_by(|a, b| b.strikes.partial_cmp(&a.strikes).unwrap());
+        tarnished
     }
 
-    std::fs::write(db_path, serde_json::to_string_pretty(&db).unwrap()).unwrap();
-
-    db
-}
-
-pub fn get_tarnished(db_path: &std::path::PathBuf) -> Vec<Tarnished> {
-    let raw = std::fs::read_to_string(db_path).unwrap_or_else(|_| json!({}).to_string());
-    let db: HashMap<String, u8> = serde_json::from_str(&raw).unwrap_or(HashMap::new());
-
-    sort_desc_by_strike(as_tarnished(db)).into_iter().collect()
-}
-
-pub fn clear_strikes(db_path: &std::path::PathBuf) {
-    if db_path.exists() {
-        std::fs::write(db_path, json!({}).to_string()).unwrap();
+    fn as_tarnished(db: HashMap<String, u8>) -> Vec<Tarnished> {
+        db.iter()
+            .map(|(name, strikes)| Tarnished {
+                name: name.to_string(),
+                strikes: *strikes,
+            })
+            .collect()
     }
 }
 
-fn update_strikes(name: &str, db: &mut HashMap<String, i8>) -> HashMap<String, i8> {
-    let count = db.get(name).unwrap_or(&0);
-    db.insert(name.to_string(), count + 1);
-
-    db.clone()
+pub trait StrikeClient {
+    fn add_strike(&self, name: &str) -> HashMap<String, i8>;
+    fn get_tarnished(&self) -> Vec<Tarnished>;
+    fn clear_strikes(&self);
 }
 
-fn sort_desc_by_strike(tarnished: Vec<Tarnished>) -> Vec<Tarnished> {
-    let mut tarnished = tarnished.clone();
-    tarnished.sort_by(|a, b| b.strikes.partial_cmp(&a.strikes).unwrap());
-    tarnished
+pub struct LocalClient {
+    pub db_path: std::path::PathBuf,
 }
 
-fn as_tarnished(db: HashMap<String, u8>) -> Vec<Tarnished> {
-    db.iter()
-        .map(|(name, strikes)| Tarnished {
-            name: name.to_string(),
-            strikes: *strikes,
-        })
-        .collect()
+impl StrikeClient for LocalClient {
+    fn add_strike(&self, name: &str) -> HashMap<String, i8> {
+        let db_path = &self.db_path;
+        if !db_path.exists() {
+            std::fs::create_dir_all(db_path.parent().unwrap()).unwrap();
+        }
+
+        let raw = std::fs::read_to_string(db_path).unwrap_or_else(|_| json!({}).to_string());
+        let db: &mut HashMap<String, i8> = &mut serde_json::from_str(&raw).unwrap();
+        let count = db.get(name).unwrap_or(&0);
+        db.insert(name.to_string(), count + 1);
+
+        std::fs::write(db_path, serde_json::to_string_pretty(&db).unwrap()).unwrap();
+
+        db.clone()
+    }
+
+    fn get_tarnished(&self) -> Vec<Tarnished> {
+        let db_path = &self.db_path;
+        let raw = std::fs::read_to_string(db_path).unwrap_or_else(|_| json!({}).to_string());
+        let db: HashMap<String, u8> = serde_json::from_str(&raw).unwrap_or(HashMap::new());
+
+        Tarnished::sort_desc_by_strike(Tarnished::as_tarnished(db))
+            .into_iter()
+            .collect()
+    }
+
+    fn clear_strikes(&self) {
+        let db_path = &self.db_path;
+        if db_path.exists() {
+            std::fs::write(db_path, json!({}).to_string()).unwrap();
+        }
+    }
 }
 
 #[cfg(test)]
@@ -61,27 +74,24 @@ mod unit_tests {
     use super::*;
 
     #[test]
-    fn it_should_add_a_strike() {
-        let db = update_strikes("guenther", &mut HashMap::new());
-        assert_eq!(db, [("guenther".to_string(), 1)].iter().cloned().collect());
-    }
+    fn it_should_add_a_strike_for_an_existing_name() -> Result<(), Box<dyn std::error::Error>> {
+        let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
+        let client = LocalClient {
+            db_path: file.to_path_buf(),
+        };
 
-    #[test]
-    fn it_should_add_a_strike_for_an_existing_name() {
-        let db = update_strikes("guenther", &mut HashMap::new());
-        assert_eq!(db, [("guenther".to_string(), 1)].iter().cloned().collect());
-    }
+        client.add_strike("guenther");
+        let db = client.add_strike("heinz");
 
-    #[test]
-    fn it_should_add_a_strike_for_an_existing_name_with_other_names_already_tarnished() {
-        let db = update_strikes("guenther", &mut HashMap::from([("hans".to_string(), 2)]));
         assert_eq!(
             db,
-            [("guenther".to_string(), 1), ("hans".to_string(), 2)]
+            [("guenther".to_string(), 1), ("heinz".to_string(), 1)]
                 .iter()
                 .cloned()
                 .collect()
         );
+
+        Ok(())
     }
 
     #[test]
@@ -94,7 +104,7 @@ mod unit_tests {
         .iter()
         .cloned()
         .collect::<HashMap<String, u8>>();
-        let tarnished = sort_desc_by_strike(as_tarnished(raw.clone()));
+        let tarnished = Tarnished::sort_desc_by_strike(Tarnished::as_tarnished(raw.clone()));
 
         assert_eq!(
             tarnished,
@@ -118,29 +128,31 @@ mod unit_tests {
 
 #[cfg(test)]
 mod integration_tests {
-    use super::*;
-    use std::path::PathBuf;
+    use crate::local_client::{LocalClient, StrikeClient};
 
     #[test]
-    fn it_should_add_a_strike() {
-        let db_path = PathBuf::from("tests/fixtures/db.json");
+    fn it_should_add_a_strike() -> Result<(), Box<dyn std::error::Error>> {
+        let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
+        let client = LocalClient {
+            db_path: file.to_path_buf(),
+        };
 
-        let db = add_strike("guenther", &db_path);
-
-        std::fs::remove_file(db_path).unwrap();
-
+        let db = client.add_strike("guenther");
         assert_eq!(db, [("guenther".to_string(), 1)].iter().cloned().collect());
+
+        Ok(())
     }
 
     #[test]
-    fn it_should_add_a_strike_to_an_existing_db() {
-        let db_path = PathBuf::from("tests/fixtures/db_0.json");
-        add_strike("guenther", &db_path);
-        add_strike("heinz", &db_path);
+    fn it_should_add_a_strike_to_an_existing_db() -> Result<(), Box<dyn std::error::Error>> {
+        let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
+        let client = LocalClient {
+            db_path: file.to_path_buf(),
+        };
+        client.add_strike("guenther");
+        client.add_strike("heinz");
 
-        let db = add_strike("guenther", &db_path);
-
-        std::fs::remove_file(db_path).unwrap();
+        let db = client.add_strike("guenther");
 
         assert_eq!(
             db,
@@ -149,15 +161,23 @@ mod integration_tests {
                 .cloned()
                 .collect()
         );
+
+        Ok(())
     }
 
     #[test]
-    fn it_should_clear_strikes() {
-        let db_path = PathBuf::from("tests/fixtures/db.json");
-        add_strike("guenther", &db_path);
+    fn it_should_clear_strikes() -> Result<(), Box<dyn std::error::Error>> {
+        let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
+        let client = LocalClient {
+            db_path: file.to_path_buf(),
+        };
+        client.add_strike("guenther");
+        client.add_strike("heinz");
 
-        clear_strikes(&db_path);
+        client.clear_strikes();
 
-        assert!(get_tarnished(&db_path).is_empty());
+        assert!(client.get_tarnished().is_empty());
+
+        Ok(())
     }
 }

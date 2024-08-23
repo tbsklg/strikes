@@ -2,7 +2,7 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 use strikes::{
     configuration::get_configuration,
-    local_client::{add_strike, clear_strikes, get_tarnished},
+    local_client::{LocalClient, StrikeClient as _},
     output::print_as_table,
 };
 
@@ -55,13 +55,15 @@ async fn main() {
         |local| local.db_path,
     ));
 
+    let client = LocalClient { db_path };
+
     match args.command.unwrap() {
         Command::Strike { name } => {
-            add_strike(&name, &db_path);
+            client.add_strike(&name);
             println!("{} has been tarnished!", name);
         }
         Command::Ls => {
-            let tarnished = get_tarnished(&db_path);
+            let tarnished = client.get_tarnished();
 
             if tarnished.is_empty() {
                 println!("No one has been tarnished yet!");
@@ -71,7 +73,7 @@ async fn main() {
             print_as_table(tarnished);
         }
         Command::Clear => {
-            clear_strikes(&db_path);
+            client.clear_strikes();
             println!("All strikes have been cleared!");
         }
     }
