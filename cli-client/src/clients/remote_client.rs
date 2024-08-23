@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use reqwest;
 use std::collections::HashMap;
 
@@ -9,6 +10,7 @@ pub struct RemoteClient {
     pub base_url: String,
 }
 
+#[async_trait]
 impl StrikeClient for RemoteClient {
     fn add_strike(&self, _name: &str) -> HashMap<String, i8> {
         HashMap::new()
@@ -20,22 +22,38 @@ impl StrikeClient for RemoteClient {
 
     fn clear_strikes(&self) {}
 
-    fn check_health(&self) -> Result<(), Box<dyn std::error::Error>> {
-        Ok(())
+    async fn check_health(&self) -> Result<(), String> {
+        let client = HttpClient {
+            base_url: self.base_url.clone(),
+            api_key: self.api_key.clone(),
+        };
+
+        client.get_health().await
     }
 }
 
-pub async fn check_health(base_url: String, api_key: String) {
-    let client = reqwest::Client::new();
-    let response = client
-        .get(format!("{}/v1/health", base_url))
-        .header("x-api-key", api_key)
-        .send()
-        .await
-        .expect("Failed to execute request");
-
-    println!(
-        "Try to reach remote location: {:?}",
-        response.text().await.unwrap()
-    );
+struct HttpClient {
+    base_url: String,
+    api_key: String,
 }
+
+impl HttpClient {
+    async fn get_health(&self) -> Result<(), String> {
+        let client = reqwest::Client::new();
+
+        println!("Checking health at: {}/health", &self.base_url);
+        let response = client
+            .get(format!("{}/health", &self.base_url))
+            .header("x-api-key", &self.api_key)
+            .send()
+            .await
+            .expect("Failed to execute request");
+        println!("Response: {:?}", response.status());
+
+        match response.status() {
+            reqwest::StatusCode::OK => Ok(()),
+            err => Err(err.to_string()),
+        }
+    }
+}
+

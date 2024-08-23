@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use serde_json::json;
 use std::collections::HashMap;
 
@@ -8,6 +9,7 @@ pub struct LocalClient {
     pub db_path: std::path::PathBuf,
 }
 
+#[async_trait]
 impl StrikeClient for LocalClient {
     fn add_strike(&self, name: &str) -> HashMap<String, i8> {
         let db_path = &self.db_path;
@@ -42,7 +44,7 @@ impl StrikeClient for LocalClient {
         }
     }
 
-    fn check_health(&self) -> Result<(), Box<dyn std::error::Error>> {
+    async fn check_health(&self) -> Result<(), String> {
         Ok(())
     }
 }
