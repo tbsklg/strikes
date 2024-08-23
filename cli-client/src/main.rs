@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
+use strikes::clients::client::StrikeClient;
 use std::path::PathBuf;
-use strikes::clients::local_client::{LocalClient, StrikeClient};
+use strikes::clients::local_client::LocalClient;
 use strikes::configuration::get_configuration;
 use strikes::output::print_as_table;
 

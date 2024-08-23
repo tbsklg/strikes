@@ -1,34 +1,8 @@
 use serde_json::json;
 use std::collections::HashMap;
 
-#[derive(Debug, PartialEq, Clone)]
-pub struct Tarnished {
-    pub name: String,
-    pub strikes: u8,
-}
-
-impl Tarnished {
-    fn sort_desc_by_strike(tarnished: Vec<Tarnished>) -> Vec<Tarnished> {
-        let mut tarnished = tarnished.clone();
-        tarnished.sort_by(|a, b| b.strikes.partial_cmp(&a.strikes).unwrap());
-        tarnished
-    }
-
-    fn as_tarnished(db: HashMap<String, u8>) -> Vec<Tarnished> {
-        db.iter()
-            .map(|(name, strikes)| Tarnished {
-                name: name.to_string(),
-                strikes: *strikes,
-            })
-            .collect()
-    }
-}
-
-pub trait StrikeClient {
-    fn add_strike(&self, name: &str) -> HashMap<String, i8>;
-    fn get_tarnished(&self) -> Vec<Tarnished>;
-    fn clear_strikes(&self);
-}
+use crate::tarnished::Tarnished;
+use super::client::StrikeClient;
 
 pub struct LocalClient {
     pub db_path: std::path::PathBuf,
