@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 
+use crate::cli::Cli;
+
 #[derive(serde::Deserialize)]
 pub struct Settings {
-    pub use_remote: bool,
     pub remote: Option<RemoteSettings>,
     pub local: Option<LocalSettings>,
 }
@@ -21,7 +22,6 @@ pub struct LocalSettings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
-            use_remote: false,
             remote: None,
             local: {
                 Some(LocalSettings {
@@ -34,17 +34,23 @@ impl Default for Settings {
     }
 }
 
-pub fn get_configuration(path: std::path::PathBuf) -> Settings {
+pub fn get_configuration(args: &Cli) -> Settings {
+    let home = &std::env::var("HOME").unwrap();
+    let config_path = args
+        .config_path
+        .clone()
+        .unwrap_or_else(|| PathBuf::from(home).join(".strikes/config.yaml"));
+
     let settings = config::Config::builder()
         .add_source(config::File::new(
-            path.to_str().unwrap(),
+            config_path.to_str().unwrap(),
             config::FileFormat::Yaml,
         ))
         .build();
 
     match settings {
         Ok(settings) => settings.try_deserialize::<Settings>().unwrap_or_default(),
-        Err(_) => Settings::default()
+        Err(_) => Settings::default(),
     }
 }
 
@@ -55,9 +61,11 @@ mod tests {
 
     #[test]
     fn parse_valid_config() {
-        let configuration =
-            get_configuration(PathBuf::from("tests/fixtures/valid_config.yaml"));
-        assert_eq!(configuration.use_remote, true);
+        let args = Cli {
+            config_path: Some(PathBuf::from("tests/fixtures/valid_config.yaml")),
+            command: None,
+        };
+        let configuration = get_configuration(&args);
         assert_eq!(configuration.remote.as_ref().unwrap().api_key, "abc");
         assert_eq!(
             configuration.remote.as_ref().unwrap().base_url,
@@ -72,8 +80,12 @@ mod tests {
     #[test]
     fn parse_default_config() {
         std::env::set_var("HOME", "/home/user");
+        let args = Cli {
+            config_path: Some(PathBuf::from("tests/fixtures/empty_config.yaml")),
+            command: None,
+        };
 
-        let configuration = get_configuration(PathBuf::from("tests/fixtures/empty_config.yaml"));
+        let configuration = get_configuration(&args);
 
         assert_eq!(
             configuration.local.unwrap().db_path,
@@ -83,8 +95,16 @@ mod tests {
 
     #[test]
     fn parse_invalid_config() {
-        let configuration = get_configuration(PathBuf::from("tests/fixtures/invalid_config.yaml"));
+        let args = Cli {
+            config_path: Some(PathBuf::from("tests/fixtures/invalid_config.yaml")),
+            command: None,
+        };
 
-        assert_eq!(configuration.use_remote, false);
+        let configuration = get_configuration(&args);
+
+        assert_eq!(
+            configuration.local.unwrap().db_path,
+            PathBuf::from("/home/user/.strikes/db.json")
+        )
     }
 }

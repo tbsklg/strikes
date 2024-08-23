@@ -22,4 +22,3 @@ impl Tarnished {
             .collect()
     }
 }
-

@@ -1,8 +1,8 @@
 use serde_json::json;
 use std::collections::HashMap;
 
-use crate::tarnished::Tarnished;
 use super::client::StrikeClient;
+use crate::tarnished::Tarnished;
 
 pub struct LocalClient {
     pub db_path: std::path::PathBuf,
@@ -40,6 +40,10 @@ impl StrikeClient for LocalClient {
         if db_path.exists() {
             std::fs::write(db_path, json!({}).to_string()).unwrap();
         }
+    }
+
+    fn check_health(&self) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
     }
 }
 
