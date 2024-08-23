@@ -1,5 +1,6 @@
+use_remote: true
 remote:
   api_key: abc
   base_url: https://example.com
 local:
-  db_path: /Home/.strikes
+  db_path: /home/user/.strikes

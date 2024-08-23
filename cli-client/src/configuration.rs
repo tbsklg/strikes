@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 #[derive(serde::Deserialize)]
 pub struct Settings {
+    pub use_remote: bool,
     pub remote: Option<RemoteSettings>,
     pub local: Option<LocalSettings>,
 }
@@ -20,6 +21,7 @@ pub struct LocalSettings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            use_remote: false,
             remote: None,
             local: {
                 Some(LocalSettings {
@@ -32,15 +34,18 @@ impl Default for Settings {
     }
 }
 
-pub fn get_configuration(path: std::path::PathBuf) -> Result<Settings, config::ConfigError> {
+pub fn get_configuration(path: std::path::PathBuf) -> Settings {
     let settings = config::Config::builder()
         .add_source(config::File::new(
             path.to_str().unwrap(),
             config::FileFormat::Yaml,
         ))
-        .build()?;
+        .build();
 
-    settings.try_deserialize::<Settings>()
+    match settings {
+        Ok(settings) => settings.try_deserialize::<Settings>().unwrap_or_default(),
+        Err(_) => Settings::default()
+    }
 }
 
 #[cfg(test)]
@@ -51,11 +56,16 @@ mod tests {
     #[test]
     fn parse_valid_config() {
         let configuration =
-            get_configuration(PathBuf::from("tests/fixtures/valid_config.yaml")).unwrap();
+            get_configuration(PathBuf::from("tests/fixtures/valid_config.yaml"));
+        assert_eq!(configuration.use_remote, true);
         assert_eq!(configuration.remote.as_ref().unwrap().api_key, "abc");
         assert_eq!(
             configuration.remote.as_ref().unwrap().base_url,
             "https://example.com"
+        );
+        assert_eq!(
+            configuration.local.unwrap().db_path,
+            PathBuf::from("/home/user/.strikes")
         );
     }
 
@@ -63,8 +73,7 @@ mod tests {
     fn parse_default_config() {
         std::env::set_var("HOME", "/home/user");
 
-        let configuration = get_configuration(PathBuf::from("tests/fixtures/empty_config.yaml"))
-            .unwrap_or_default();
+        let configuration = get_configuration(PathBuf::from("tests/fixtures/empty_config.yaml"));
 
         assert_eq!(
             configuration.local.unwrap().db_path,
@@ -73,8 +82,9 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
     fn parse_invalid_config() {
-        get_configuration(PathBuf::from("tests/fixtures/invalid_config.yaml")).unwrap();
+        let configuration = get_configuration(PathBuf::from("tests/fixtures/invalid_config.yaml"));
+
+        assert_eq!(configuration.use_remote, false);
     }
 }
