@@ -128,7 +128,7 @@ mod unit_tests {
 
 #[cfg(test)]
 mod integration_tests {
-    use crate::local_client::{LocalClient, StrikeClient};
+    use crate::clients::local_client::{LocalClient, StrikeClient as _};
 
     #[test]
     fn it_should_add_a_strike() -> Result<(), Box<dyn std::error::Error>> {

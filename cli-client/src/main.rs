@@ -1,10 +1,8 @@
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use strikes::{
-    configuration::get_configuration,
-    local_client::{LocalClient, StrikeClient as _},
-    output::print_as_table,
-};
+use strikes::clients::local_client::{LocalClient, StrikeClient};
+use strikes::configuration::get_configuration;
+use strikes::output::print_as_table;
 
 #[derive(Subcommand, Clone, Debug)]
 enum Command {

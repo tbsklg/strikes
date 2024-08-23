@@ -1,4 +1,3 @@
 pub mod configuration;
-pub mod local_client;
+pub mod clients;
 pub mod output;
-pub mod remote_client;
