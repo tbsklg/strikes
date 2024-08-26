@@ -7,20 +7,16 @@ async fn function_handler(request: Request) -> Result<Response<Body>, Error> {
     tracing::info!("User: {:?}", user);
 
     match user {
-        Some(user) => {
-            Ok(Response::builder()
-                .status(200)
-                .header("Content-Type", "text/plain")
-                .body(Body::from(format!("Hello, {}!", user)))
-                .unwrap())
-        }
-        None => {
-            Ok(Response::builder()
-                .status(400)
-                .header("Content-Type", "text/plain")
-                .body(Body::from("Missing user parameter"))
-                .unwrap())
-        }
+        Some(user) => Ok(Response::builder()
+            .status(200)
+            .header("Content-Type", "text/plain")
+            .body(Body::from(format!("Hello, {}!", user)))
+            .unwrap()),
+        None => Ok(Response::builder()
+            .status(400)
+            .header("Content-Type", "text/plain")
+            .body(Body::from("Missing user parameter"))
+            .unwrap()),
     }
 }
 
