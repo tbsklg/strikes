@@ -108,6 +108,9 @@ resource "aws_api_gateway_deployment" "strikes" {
       aws_api_gateway_resource.health.id,
       aws_api_gateway_method.health.id,
       aws_api_gateway_integration.health.id,
+      aws_api_gateway_resource.user.id,
+      aws_api_gateway_method.user.id,
+      aws_api_gateway_integration.user.id,
     ]))
   }
 

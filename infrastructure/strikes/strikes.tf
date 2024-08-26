@@ -1,6 +1,6 @@
 locals {
   app_name    = "strikes"
-  put_strikes_lambda_name = "put_strikes"
+  put_strikes_lambda_name = "put-strikes"
 }
 
 data "aws_iam_policy_document" "lambda_assume_role" {
@@ -43,7 +43,7 @@ resource "aws_lambda_function" "put_strikes" {
 
   runtime = "provided.al2023"
 
-  architectures = ["arm64"]
+  architectures = ["x86_64"]
 
   memory_size = 1024
 }

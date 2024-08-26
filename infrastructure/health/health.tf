@@ -1,6 +1,6 @@
 locals {
   app_name    = "strikes"
-  lambda_name = "health_lambda"
+  lambda_name = "health"
 }
 
 data "aws_iam_policy_document" "lambda_assume_role" {
@@ -43,7 +43,7 @@ resource "aws_lambda_function" "health" {
 
   runtime = "provided.al2023"
 
-  architectures = ["arm64"]
+  architectures = ["x86_64"]
 
   memory_size = 1024
 }
