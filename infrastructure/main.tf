@@ -15,20 +15,62 @@ terraform {
 }
 
 provider "aws" {
-  region  = "eu-central-1"
+  region = "eu-central-1"
 }
 
 module "health" {
   source = "./health"
 }
 
+module "strikes" {
+  source = "./strikes"
+}
+
 resource "aws_api_gateway_rest_api" "strikes" {
   name = "strikes"
 }
 
-resource "aws_api_gateway_resource" "health" {
-  path_part   = "health"
+resource "aws_api_gateway_resource" "strikes" {
   parent_id   = aws_api_gateway_rest_api.strikes.root_resource_id
+  path_part   = "strikes"
+  rest_api_id = aws_api_gateway_rest_api.strikes.id
+}
+
+resource "aws_api_gateway_resource" "user" {
+  parent_id   = aws_api_gateway_resource.strikes.id
+  path_part   = "{user}"
+  rest_api_id = aws_api_gateway_rest_api.strikes.id
+}
+
+resource "aws_api_gateway_method" "user" {
+  authorization    = "NONE"
+  http_method      = "PUT"
+  resource_id      = aws_api_gateway_resource.user.id
+  rest_api_id      = aws_api_gateway_rest_api.strikes.id
+  api_key_required = true
+}
+
+resource "aws_api_gateway_integration" "user" {
+  http_method             = aws_api_gateway_method.user.http_method
+  resource_id             = aws_api_gateway_resource.user.id
+  rest_api_id             = aws_api_gateway_rest_api.strikes.id
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = module.strikes.put_strikes_lambda_invoke_arn
+}
+
+resource "aws_lambda_permission" "apigw_invoke_user_lambda" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = module.strikes.put_strikes_lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"
+}
+
+resource "aws_api_gateway_resource" "health" {
+  parent_id   = aws_api_gateway_rest_api.strikes.root_resource_id
+  path_part   = "health"
   rest_api_id = aws_api_gateway_rest_api.strikes.id
 }
 

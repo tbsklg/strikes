@@ -1,0 +1,13 @@
+[package]
+name = "strikes"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+path = "src/put_strikes.rs"
+name = "put_strikes"
+
+[dependencies]
+lambda_http = "0.13.0"
+tokio = { version = "1", features = ["macros"] }
+
