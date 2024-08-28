@@ -65,10 +65,7 @@ mod unit_tests {
         let _ = client.add_strike("guenther").await?;
         let strikes = client.add_strike("guenther").await?;
 
-        assert_eq!(
-            strikes,
-            3,
-        );
+        assert_eq!(strikes, 3,);
 
         Ok(())
     }
@@ -107,7 +104,10 @@ mod unit_tests {
 
 #[cfg(test)]
 mod integration_tests {
-    use crate::{clients::local_client::{LocalClient, StrikeClient as _}, tarnished::Tarnished};
+    use crate::{
+        clients::local_client::{LocalClient, StrikeClient as _},
+        tarnished::Tarnished,
+    };
 
     #[tokio::test]
     async fn it_should_add_a_strike() -> Result<(), Box<dyn std::error::Error>> {
@@ -119,12 +119,13 @@ mod integration_tests {
         let _ = client.add_strike("guenther").await?;
         let strikes = client.get_tarnished();
 
-        assert_eq!(strikes, vec![
-            Tarnished {
+        assert_eq!(
+            strikes,
+            vec![Tarnished {
                 name: "guenther".to_string(),
                 strikes: 1
-            }
-        ]);
+            }]
+        );
         Ok(())
     }
 
@@ -134,11 +135,11 @@ mod integration_tests {
         let client = LocalClient {
             db_path: file.to_path_buf(),
         };
-        
+
         let _ = client.add_strike("guenther").await?;
         let _ = client.add_strike("heinz").await?;
         let _ = client.add_strike("guenther").await?;
-        
+
         let strikes = client.get_tarnished();
 
         assert_eq!(
@@ -151,7 +152,7 @@ mod integration_tests {
                 Tarnished {
                     name: "heinz".to_string(),
                     strikes: 1
-                } 
+                }
             ]
         );
 
