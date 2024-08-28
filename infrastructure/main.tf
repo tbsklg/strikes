@@ -18,8 +18,8 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-module "strikes" {
-  source = "./strikes"
+module "lambdas" {
+  source = "./lambdas"
 }
 
 resource "aws_api_gateway_rest_api" "strikes" {
@@ -52,13 +52,13 @@ resource "aws_api_gateway_integration" "user" {
   rest_api_id             = aws_api_gateway_rest_api.strikes.id
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
-  uri                     = module.strikes.put_strikes_lambda_invoke_arn
+  uri                     = module.lambdas.put_strikes_lambda_invoke_arn
 }
 
 resource "aws_lambda_permission" "apigw_invoke_user_lambda" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = module.strikes.put_strikes_lambda_function_name
+  function_name = module.lambdas.put_strikes_lambda_function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"
@@ -84,13 +84,13 @@ resource "aws_api_gateway_integration" "health" {
   rest_api_id             = aws_api_gateway_rest_api.strikes.id
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
-  uri                     = module.strikes.health_lambda_invoke_arn
+  uri                     = module.lambdas.health_lambda_invoke_arn
 }
 
 resource "aws_lambda_permission" "apigw_invoke_health_lambda" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = module.strikes.health_lambda_function_name
+  function_name = module.lambdas.health_lambda_function_name 
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"

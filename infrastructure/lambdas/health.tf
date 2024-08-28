@@ -33,7 +33,7 @@ data "archive_file" "lambda_archive" {
 
 resource "aws_lambda_function" "health" {
   filename      = data.archive_file.lambda_archive.output_path
-  function_name = local.health_lambda_name
+  function_name = "${local.health_lambda_name}"
   role          = aws_iam_role.health_lambda_role.arn
 
   handler = "bootstrap"

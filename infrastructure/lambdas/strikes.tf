@@ -53,8 +53,8 @@ resource "aws_iam_role" "put_strikes_lambda_role" {
   name               = "${local.put_strikes_lambda_name}-role"
   assume_role_policy = data.aws_iam_policy_document.put-strikes_lambda_assume_role.json
   inline_policy {
-    name   = "dynamo_write"
-    policy = data.aws_iam_policy_document.dynamo_write.json
+    name = "dynamo_write"
+    policy = data.aws_iam_policy_document.dynamo_write.json 
   }
 }
 
@@ -66,7 +66,7 @@ data "archive_file" "put_strikes_lambda_archive" {
 
 resource "aws_lambda_function" "put_strikes" {
   filename      = data.archive_file.put_strikes_lambda_archive.output_path
-  function_name = local.put_strikes_lambda_name
+  function_name = "${local.put_strikes_lambda_name}"
   role          = aws_iam_role.put_strikes_lambda_role.arn
 
   handler = "bootstrap"
