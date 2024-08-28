@@ -4,7 +4,7 @@ use strikes::clients::client::StrikeClient;
 use strikes::clients::local_client::LocalClient;
 use strikes::clients::remote_client::RemoteClient;
 use strikes::configuration::{get_configuration, Settings};
-use strikes::output::print_as_table;
+use strikes::output::{print_as_table, print_strikes};
 
 #[tokio::main]
 async fn main() {
@@ -14,7 +14,7 @@ async fn main() {
 
     match &args.clone().command.unwrap() {
         Command::Strike { name } => match client.add_strike(name).await {
-            Ok(strikes) => println!("{} has now {} strikes!", name, strikes),
+            Ok(strikes) => print_strikes(name, strikes),
             Err(err) => eprintln!("Failed to add strike: {}", err),
         },
         Command::Ls => {
