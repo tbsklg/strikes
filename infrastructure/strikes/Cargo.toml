@@ -8,6 +8,8 @@ path = "src/put_strikes.rs"
 name = "put_strikes"
 
 [dependencies]
+aws-config = "1.5.5"
+aws-sdk-dynamodb = "1.42.0"
 lambda_http = "0.13.0"
 tokio = { version = "1", features = ["macros"] }
-
+serde_json = "1.0"

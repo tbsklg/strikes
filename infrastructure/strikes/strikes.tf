@@ -3,6 +3,19 @@ locals {
   put_strikes_lambda_name = "put-strikes"
 }
 
+resource "aws_dynamodb_table" "strikes-table" {
+  name           = "Strikes"
+  billing_mode   = "PROVISIONED"
+  read_capacity  = 8
+  write_capacity = 8
+  hash_key       = "UserId"
+
+  attribute {
+    name = "UserId"
+    type = "S"
+  }
+}
+
 data "aws_iam_policy_document" "lambda_assume_role" {
   statement {
     effect = "Allow"
@@ -16,6 +29,22 @@ data "aws_iam_policy_document" "lambda_assume_role" {
   }
 }
 
+data "aws_iam_policy_document" "dynamo_write" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "dynamodb:PutItem",
+      "dynamodb:GetItem",
+      "dynamodb:UpdateItem"
+    ]
+
+    resources = [
+      aws_dynamodb_table.strikes-table.arn
+    ]
+  }
+}
+
 resource "aws_iam_role_policy_attachment" "basic_execution_role_policy_attachment" {
   role       = aws_iam_role.put_strikes_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -24,6 +53,10 @@ resource "aws_iam_role_policy_attachment" "basic_execution_role_policy_attachmen
 resource "aws_iam_role" "put_strikes_role" {
   name               = "${local.app_name}-${local.put_strikes_lambda_name}"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+  inline_policy {
+    name = "dynamo_write"
+    policy = data.aws_iam_policy_document.dynamo_write.json 
+  }
 }
 
 data "archive_file" "put_strikes_lambda_archive" {

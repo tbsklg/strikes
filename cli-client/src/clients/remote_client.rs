@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use reqwest;
-use std::collections::HashMap;
 
 use super::client::StrikeClient;
 use crate::tarnished::Tarnished;
@@ -10,10 +9,20 @@ pub struct RemoteClient {
     pub base_url: String,
 }
 
+#[derive(serde::Deserialize)]
+struct StrikeResponse {
+    strike_count: i8,
+}
+
 #[async_trait]
 impl StrikeClient for RemoteClient {
-    fn add_strike(&self, _name: &str) -> HashMap<String, i8> {
-        HashMap::new()
+    async fn add_strike(&self, username: &str) -> Result<i8, String> {
+        let client = HttpClient {
+            base_url: self.base_url.clone(),
+            api_key: self.api_key.clone(),
+        };
+
+        client.put_strike(username).await
     }
 
     fn get_tarnished(&self) -> Vec<Tarnished> {
@@ -53,6 +62,26 @@ impl HttpClient {
 
         match response.status() {
             reqwest::StatusCode::OK => Ok(()),
+            err => Err(err.to_string()),
+        }
+    }
+
+    async fn put_strike(&self, username: &str) -> Result<i8, String> {
+        let client = reqwest::Client::new();
+        let response = client
+            .put(format!("{}/strikes/{}", &self.base_url, username))
+            .header("x-api-key", &self.api_key)
+            .send()
+            .await
+            .expect("Failed to execute request");
+
+        match response.status() {
+            reqwest::StatusCode::OK => {
+                let body = response.text().await.expect("Failed to read response body");
+                Ok(serde_json::from_str::<StrikeResponse>(&body)
+                    .expect("Failed to parse response")
+                    .strike_count)
+            }
             err => Err(err.to_string()),
         }
     }

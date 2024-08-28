@@ -13,10 +13,10 @@ async fn main() {
     let client = create_client(settings);
 
     match &args.clone().command.unwrap() {
-        Command::Strike { name } => {
-            client.add_strike(name);
-            println!("{} has been tarnished!", name);
-        }
+        Command::Strike { name } => match client.add_strike(name).await {
+            Ok(strikes) => println!("{} has now {} strikes!", name, strikes),
+            Err(err) => eprintln!("Failed to add strike: {}", err),
+        },
         Command::Ls => {
             let tarnished = client.get_tarnished();
 
