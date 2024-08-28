@@ -7,6 +7,10 @@ edition = "2021"
 path = "src/put_strikes.rs"
 name = "put_strikes"
 
+[[bin]]
+path = "src/health.rs"
+name = "health"
+
 [dependencies]
 aws-config = "1.5.5"
 aws-sdk-dynamodb = "1.42.0"

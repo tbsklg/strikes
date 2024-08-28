@@ -18,10 +18,6 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-module "health" {
-  source = "./health"
-}
-
 module "strikes" {
   source = "./strikes"
 }
@@ -88,13 +84,13 @@ resource "aws_api_gateway_integration" "health" {
   rest_api_id             = aws_api_gateway_rest_api.strikes.id
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
-  uri                     = module.health.lambda_invoke_arn
+  uri                     = module.strikes.health_lambda_invoke_arn
 }
 
 resource "aws_lambda_permission" "apigw_invoke_health_lambda" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = module.health.lambda_function_name
+  function_name = module.strikes.health_lambda_function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"

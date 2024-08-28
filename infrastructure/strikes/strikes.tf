@@ -1,5 +1,4 @@
 locals {
-  app_name    = "strikes"
   put_strikes_lambda_name = "put-strikes"
 }
 
@@ -16,7 +15,7 @@ resource "aws_dynamodb_table" "strikes-table" {
   }
 }
 
-data "aws_iam_policy_document" "lambda_assume_role" {
+data "aws_iam_policy_document" "put-strikes_lambda_assume_role" {
   statement {
     effect = "Allow"
 
@@ -45,30 +44,30 @@ data "aws_iam_policy_document" "dynamo_write" {
   }
 }
 
-resource "aws_iam_role_policy_attachment" "basic_execution_role_policy_attachment" {
-  role       = aws_iam_role.put_strikes_role.name
+resource "aws_iam_role_policy_attachment" "strikes_basic_execution_role_policy_attachment" {
+  role       = aws_iam_role.put_strikes_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
-resource "aws_iam_role" "put_strikes_role" {
-  name               = "${local.app_name}-${local.put_strikes_lambda_name}"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+resource "aws_iam_role" "put_strikes_lambda_role" {
+  name               = "${local.put_strikes_lambda_name}-role"
+  assume_role_policy = data.aws_iam_policy_document.put-strikes_lambda_assume_role.json
   inline_policy {
-    name = "dynamo_write"
-    policy = data.aws_iam_policy_document.dynamo_write.json 
+    name   = "dynamo_write"
+    policy = data.aws_iam_policy_document.dynamo_write.json
   }
 }
 
 data "archive_file" "put_strikes_lambda_archive" {
   type        = "zip"
   source_file = "${path.module}/target/lambda/put_strikes/bootstrap"
-  output_path = "${path.module}/target/archive/health.zip"
+  output_path = "${path.module}/target/archive/put_strikes.zip"
 }
 
 resource "aws_lambda_function" "put_strikes" {
   filename      = data.archive_file.put_strikes_lambda_archive.output_path
-  function_name = "${local.app_name}-${local.put_strikes_lambda_name}"
-  role          = aws_iam_role.put_strikes_role.arn
+  function_name = local.put_strikes_lambda_name
+  role          = aws_iam_role.put_strikes_lambda_role.arn
 
   handler = "bootstrap"
 
