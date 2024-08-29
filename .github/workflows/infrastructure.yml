@@ -30,7 +30,8 @@ jobs:
           compose-file: "infrastructure/lambdas/tests/docker-compose.yml"
 
       - name: Build & Test lambda
-        env: 
+        env:
+          AWS_DEFAULT_REGION: eu-central-1
           AWS_ACCESS_KEY_ID: 223344
           AWS_SECRET_ACCESS_KEY: wJalrXUtTHISI/DYNAMODB/bPxRfiCYEXAMPLEKEY
         run: |
