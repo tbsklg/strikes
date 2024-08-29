@@ -24,6 +24,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
 
+      - name: Run docker-compose
+        uses: hoverkraft-tech/compose-action@v2.0.1
+        with:
+          compose-file: "docker-compose.yml"
+        working-directory: infrastructure/lambdas/tests
+
       - name: Build & Test lambda
         run: |
           pip3 install cargo-lambda
