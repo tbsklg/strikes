@@ -79,7 +79,7 @@ You'll need to install:
 - [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
 
 ### Deploy infrastructure to your AWS account
-First of all you need to create a S3 bucket to store the terraform state. Navigate to the infrastructure/remomte-state directory and run:
+First of all you need to create a S3 bucket to store the terraform state. Navigate to the infrastructure/remote-state directory and run:
 ```bash
 terraform init
 terraform plan
