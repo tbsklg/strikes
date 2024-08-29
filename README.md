@@ -19,24 +19,27 @@ tar -xvzf strikes-0.0.1-alpha-x86_64-unknown-linux-musl.tar.gz -C <path-to-insta
 After extracting the binary, you may need to add the path to your PATH environment variable.
 
 ## Usage
-- Add a strike
 ```bash
-strikes strike <user>
-```
+Simple CLI tool to track and assign strikes
 
-- List all strikes
-```bash
-strikes ls
-```
+Usage: strikes [OPTIONS] [COMMAND]
 
-- Clear all strikes
-```bash
-strikes clear
-```
+Commands:
+  strike        Add a strike
+  ls            List all strikes
+  clear         Clear strikes
+  check-health  Check health of the client
+  help          Print this message or the help of the given subcommand(s)
 
-- Help
-```bash
-strikes --help
+Options:
+  -c, --config-path <CONFIG_PATH>
+          Specify the path to the configuration file
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version
 ```
 
 ## Use with a remote server
