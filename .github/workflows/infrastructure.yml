@@ -29,8 +29,10 @@ jobs:
           pip3 install cargo-lambda
           rustup update stable && rustup default stable
           cargo lambda build --arm64 --release
+          cd tests
+          docker-compose up -d
           cargo test --verbose
-        working-directory: infrastructure/health
+        working-directory: infrastructure/lambdas
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
