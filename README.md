@@ -19,7 +19,7 @@ tar -xvzf strikes-0.0.1-alpha-x86_64-unknown-linux-musl.tar.gz -C <path-to-insta
 After extracting the binary, you may need to add the path to your PATH environment variable.
 
 ## Usage
-- Add a strike to a user
+- Add a strike
 ```bash
 strikes strike <user>
 ```
@@ -34,7 +34,12 @@ strikes ls
 strikes clear
 ```
 
-## Use remote server
+- Help
+```bash
+strikes --help
+```
+
+## Use with a remote server
 You can use a remote server to store the strikes. Either you get access to an existing server or you can deploy the infractructure to your AWS account yourself.
 Anyways you need to provide the URL to the server and an API key.
 
@@ -42,12 +47,12 @@ Anyways you need to provide the URL to the server and an API key.
 You can use the local client without a remote server.
 It will generate a JSON file where the strikes are stored. 
 
-### Configuration file
+## Configuration file
 The default path is in your home directory at '.strikes/db.json'.
 You can configure a different location by using the '--db-path' argument or by providing a configuration file.
 The argument has precedence over the configuration file.
 
-If you configure a remote and a local server, the remote server will be used. To use the local server, you need to remove the remote configuration from the configuration file.
+If you configure a remote and a local server, the remote server will be used. To use the local server, you need to remove the remote configuration from the configuration file. Following is an example of a configuration file:
 
 ```yaml
 remote:
@@ -57,6 +62,7 @@ local:
     db_path: "/path/to/db.json"
 ```
 
+You can provide the configuration file by using the '--config-path' argument.
 ```bash
 strikes --config-path /path/to/configuration.yaml strike guenther
 ```
@@ -64,10 +70,10 @@ strikes --config-path /path/to/configuration.yaml strike guenther
 ## Development
 ### Pre-requisites
 You'll need to install:
-- (Rust)[https://www.rust-lang.org/tools/install] 
-- (Docker)[https://docs.docker.com/get-docker/]
-- (Terraform)[https://learn.hashicorp.com/tutorials/terraform/install-cli]
-- (AWS CLI)[https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html]
+- [Rust](https://www.rust-lang.org/tools/install) 
+- [Docker](https://docs.docker.com/get-docker)
+- [Terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+- [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html)
 
 ### Deploy infrastructure to your AWS account
 First of all you need to create a S3 bucket to store the terraform state. Navigate to the infrastructure/remomte-state directory and run:
