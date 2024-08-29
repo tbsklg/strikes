@@ -9,6 +9,11 @@ pub struct RemoteClient {
     pub base_url: String,
 }
 
+struct HttpClient {
+    base_url: String,
+    api_key: String,
+}
+
 #[derive(serde::Deserialize)]
 struct StrikeResponse {
     strike_count: i8,
@@ -39,11 +44,6 @@ impl StrikeClient for RemoteClient {
 
         client.get_health().await
     }
-}
-
-struct HttpClient {
-    base_url: String,
-    api_key: String,
 }
 
 impl HttpClient {
@@ -84,5 +84,35 @@ impl HttpClient {
             }
             err => Err(err.to_string()),
         }
+    }
+}
+
+#[cfg(test)]
+mod unittests {
+    use wiremock::{matchers::any, Mock, MockServer, ResponseTemplate};
+
+    use crate::clients::remote_client::HttpClient;
+
+    #[tokio::test]
+    async fn it_should_add_a_strike() -> Result<(), Box<dyn std::error::Error>> {
+        let mock_server = MockServer::start().await;
+        Mock::given(any())
+            .respond_with(
+                ResponseTemplate::new(200).set_body_json(serde_json::json!({"strike_count": 3})),
+            )
+            .expect(1)
+            .mount(&mock_server)
+            .await;
+
+        let client = HttpClient {
+            api_key: "abc".to_string(),
+            base_url: mock_server.uri(),
+        };
+
+        let strike_count = client.put_strike("guenther").await?;
+
+        assert_eq!(3, strike_count);
+
+        Ok(())
     }
 }
