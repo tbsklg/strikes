@@ -55,7 +55,7 @@ mod unit_tests {
     use super::*;
 
     #[tokio::test]
-    async fn it_should_some_strikes() -> Result<(), Box<dyn std::error::Error>> {
+    async fn it_should_add_some_strikes() -> Result<(), Box<dyn std::error::Error>> {
         let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
         let client = LocalClient {
             db_path: file.to_path_buf(),

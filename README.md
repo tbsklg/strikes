@@ -52,3 +52,31 @@ local:
 ```bash
 strikes --config-path /path/to/configuration.yaml strike guenther
 ```
+
+## Development
+### Pre-requisites
+You'll need to install:
+- Rust
+- Docker
+- Terraform
+- AWS cli
+
+### How to test cli-client
+Navigate to cli-client and run:
+```bash
+cargo test
+```
+
+### How to test infrastructure lambdas
+Navigate to infrastructure/lambdas/tests and run:
+
+```bash
+docker-compose up -d
+```
+
+This will set up a DynamoDB local instance. Afterwards navigate back to infrastructure/lambdas and run:
+
+
+```bash
+cargo test
+```
