@@ -15,7 +15,7 @@ pub enum Command {
 #[derive(Clone, Debug, Parser)]
 #[command(
     name = "Strikes CLI",
-    version = "0.2.1",
+    version = env!("CARGO_PKG_VERSION"),
     about = "Track and assign strikes",
     long_about = "Simple CLI tool to track and assign strikes"
 )]
