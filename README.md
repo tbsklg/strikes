@@ -51,8 +51,7 @@ You can use the local client without a remote server.
 It will generate a JSON file where the strikes are stored. 
 
 ## Configuration file
-Provide a configuration file at ./strikes/configuration.yaml with the following content. Both fields are optional.
-If you configure a remote and a local server, the remote server will be used. To use the local server, you need to remove the remote configuration from the configuration file.
+Provide a configuration file at ./strikes/configuration.yaml. The remote server configuration has precedence over the local configuration.
 
 ```yaml
 remote:
@@ -62,7 +61,7 @@ local:
     db_path: "/path/to/db.json"
 ```
 
-You can configure a different location by using the '--config-path' argument.
+You can configure a different configuration file location by using the '--config-path' argument.
 The argument has precedence over the configuration file.
 
 ```bash
