@@ -99,6 +99,7 @@ mod tests {
 
     #[test]
     fn parse_invalid_config() {
+        std::env::set_var("HOME", "/home/user");
         let args = Cli {
             config_path: Some(PathBuf::from("tests/fixtures/invalid_config.yaml")),
             command: None,

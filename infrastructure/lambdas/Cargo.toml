@@ -1,0 +1,20 @@
+[package]
+name = "strikes"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+path = "src/put_strikes.rs"
+name = "put_strikes"
+
+[[bin]]
+path = "src/health.rs"
+name = "health"
+
+[dependencies]
+aws-config = "1.5.5"
+aws-sdk-dynamodb = "1.42.0"
+lambda_http = "0.13.0"
+tokio = { version = "1", features = ["macros"] }
+serde_json = "1.0"
+uuid = { version = "1.10.0", features = ["v4"] }

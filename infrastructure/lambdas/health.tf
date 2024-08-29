@@ -1,9 +1,8 @@
 locals {
-  app_name    = "strikes"
-  lambda_name = "health_lambda"
+  health_lambda_name = "health"
 }
 
-data "aws_iam_policy_document" "lambda_assume_role" {
+data "aws_iam_policy_document" "health_lambda_assume_role" {
   statement {
     effect = "Allow"
 
@@ -16,13 +15,13 @@ data "aws_iam_policy_document" "lambda_assume_role" {
   }
 }
 
-resource "aws_iam_role" "lambda_role" {
-  name               = "${local.app_name}-${local.lambda_name}"
-  assume_role_policy = data.aws_iam_policy_document.lambda_assume_role.json
+resource "aws_iam_role" "health_lambda_role" {
+  name               = "${local.health_lambda_name}-lambda-role"
+  assume_role_policy = data.aws_iam_policy_document.health_lambda_assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "basic_execution_role_policy_attachment" {
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy_attachment" "health_lambda_basic_execution_role_policy_attachment" {
+  role       = aws_iam_role.health_lambda_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
@@ -34,8 +33,8 @@ data "archive_file" "lambda_archive" {
 
 resource "aws_lambda_function" "health" {
   filename      = data.archive_file.lambda_archive.output_path
-  function_name = "${local.app_name}-${local.lambda_name}"
-  role          = aws_iam_role.lambda_role.arn
+  function_name = "${local.health_lambda_name}"
+  role          = aws_iam_role.health_lambda_role.arn
 
   handler = "bootstrap"
 
@@ -43,16 +42,16 @@ resource "aws_lambda_function" "health" {
 
   runtime = "provided.al2023"
 
-  architectures = ["arm64"]
+  architectures = ["x86_64"]
 
   memory_size = 1024
 }
 
-output "lambda_invoke_arn" {
+output "health_lambda_invoke_arn" {
   value = aws_lambda_function.health.invoke_arn
 }
 
-output "lambda_function_name" {
+output "health_lambda_function_name" {
   value = aws_lambda_function.health.function_name
 }
 

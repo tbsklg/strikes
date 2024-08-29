@@ -11,7 +11,7 @@ pub struct LocalClient {
 
 #[async_trait]
 impl StrikeClient for LocalClient {
-    fn add_strike(&self, name: &str) -> HashMap<String, i8> {
+    async fn add_strike(&self, name: &str) -> Result<i8, String> {
         let db_path = &self.db_path;
         if !db_path.exists() {
             std::fs::create_dir_all(db_path.parent().unwrap()).unwrap();
@@ -24,7 +24,7 @@ impl StrikeClient for LocalClient {
 
         std::fs::write(db_path, serde_json::to_string_pretty(&db).unwrap()).unwrap();
 
-        db.clone()
+        Ok(*db.get(name).unwrap())
     }
 
     fn get_tarnished(&self) -> Vec<Tarnished> {
@@ -54,23 +54,18 @@ impl StrikeClient for LocalClient {
 mod unit_tests {
     use super::*;
 
-    #[test]
-    fn it_should_add_a_strike_for_an_existing_name() -> Result<(), Box<dyn std::error::Error>> {
+    #[tokio::test]
+    async fn it_should_add_some_strikes() -> Result<(), Box<dyn std::error::Error>> {
         let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
         let client = LocalClient {
             db_path: file.to_path_buf(),
         };
 
-        client.add_strike("guenther");
-        let db = client.add_strike("heinz");
+        let _ = client.add_strike("guenther").await?;
+        let _ = client.add_strike("guenther").await?;
+        let strikes = client.add_strike("guenther").await?;
 
-        assert_eq!(
-            db,
-            [("guenther".to_string(), 1), ("heinz".to_string(), 1)]
-                .iter()
-                .cloned()
-                .collect()
-        );
+        assert_eq!(strikes, 3,);
 
         Ok(())
     }
@@ -109,38 +104,56 @@ mod unit_tests {
 
 #[cfg(test)]
 mod integration_tests {
-    use crate::clients::local_client::{LocalClient, StrikeClient as _};
+    use crate::{
+        clients::local_client::{LocalClient, StrikeClient as _},
+        tarnished::Tarnished,
+    };
 
-    #[test]
-    fn it_should_add_a_strike() -> Result<(), Box<dyn std::error::Error>> {
+    #[tokio::test]
+    async fn it_should_add_a_strike() -> Result<(), Box<dyn std::error::Error>> {
         let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
         let client = LocalClient {
             db_path: file.to_path_buf(),
         };
 
-        let db = client.add_strike("guenther");
-        assert_eq!(db, [("guenther".to_string(), 1)].iter().cloned().collect());
+        let _ = client.add_strike("guenther").await?;
+        let strikes = client.get_tarnished();
 
+        assert_eq!(
+            strikes,
+            vec![Tarnished {
+                name: "guenther".to_string(),
+                strikes: 1
+            }]
+        );
         Ok(())
     }
 
-    #[test]
-    fn it_should_add_a_strike_to_an_existing_db() -> Result<(), Box<dyn std::error::Error>> {
+    #[tokio::test]
+    async fn it_should_add_a_strike_to_an_existing_db() -> Result<(), Box<dyn std::error::Error>> {
         let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
         let client = LocalClient {
             db_path: file.to_path_buf(),
         };
-        client.add_strike("guenther");
-        client.add_strike("heinz");
 
-        let db = client.add_strike("guenther");
+        let _ = client.add_strike("guenther").await?;
+        let _ = client.add_strike("heinz").await?;
+        let _ = client.add_strike("guenther").await?;
+
+        let strikes = client.get_tarnished();
 
         assert_eq!(
-            db,
-            [("guenther".to_string(), 2), ("heinz".to_string(), 1)]
-                .iter()
-                .cloned()
-                .collect()
+            strikes,
+            vec![
+                Tarnished {
+                    name: "guenther".to_string(),
+                    strikes: 2
+                },
+                Tarnished {
+                    name: "heinz".to_string(),
+                    strikes: 1
+                }
+            ]
         );
 
         Ok(())
@@ -152,8 +165,9 @@ mod integration_tests {
         let client = LocalClient {
             db_path: file.to_path_buf(),
         };
-        client.add_strike("guenther");
-        client.add_strike("heinz");
+
+        let _ = client.add_strike("guenther");
+        let _ = client.add_strike("heinz");
 
         client.clear_strikes();
 

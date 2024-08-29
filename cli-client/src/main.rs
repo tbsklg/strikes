@@ -4,7 +4,7 @@ use strikes::clients::client::StrikeClient;
 use strikes::clients::local_client::LocalClient;
 use strikes::clients::remote_client::RemoteClient;
 use strikes::configuration::{get_configuration, Settings};
-use strikes::output::print_as_table;
+use strikes::output::{print_as_table, print_strikes};
 
 #[tokio::main]
 async fn main() {
@@ -13,10 +13,10 @@ async fn main() {
     let client = create_client(settings);
 
     match &args.clone().command.unwrap() {
-        Command::Strike { name } => {
-            client.add_strike(name);
-            println!("{} has been tarnished!", name);
-        }
+        Command::Strike { name } => match client.add_strike(name).await {
+            Ok(strikes) => print_strikes(name, strikes),
+            Err(err) => eprintln!("Failed to add strike: {}", err),
+        },
         Command::Ls => {
             let tarnished = client.get_tarnished();
 
