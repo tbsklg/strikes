@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use crate::clients::remote_client::StrikesResponse;
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct Tarnished {
     pub name: String,
@@ -13,11 +15,20 @@ impl Tarnished {
         tarnished
     }
 
-    pub fn as_tarnished(db: HashMap<String, u8>) -> Vec<Tarnished> {
+    pub fn from_map(db: HashMap<String, u8>) -> Vec<Tarnished> {
         db.iter()
             .map(|(name, strikes)| Tarnished {
                 name: name.to_string(),
                 strikes: *strikes,
+            })
+            .collect()
+    }
+
+    pub fn from_vec(sr: Vec<StrikesResponse>) -> Vec<Tarnished> {
+        sr.iter()
+            .map(|StrikesResponse { name, strike_count } | Tarnished {
+                name: name.to_string(),
+                strikes: *strike_count
             })
             .collect()
     }

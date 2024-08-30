@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use aws_config::BehaviorVersion;
 use aws_sdk_dynamodb::{
     error::ProvideErrorMetadata,
@@ -6,6 +5,7 @@ use aws_sdk_dynamodb::{
     Client,
 };
 use lambda_http::{run, service_fn, tracing, Body, Error, Request, RequestExt, Response};
+use std::collections::HashMap;
 
 async fn function_handler(request: Request) -> Result<Response<Body>, Error> {
     let params = request.path_parameters();
@@ -20,7 +20,7 @@ async fn function_handler(request: Request) -> Result<Response<Body>, Error> {
             Ok(Response::builder()
                 .status(200)
                 .body(Body::Text(
-                    serde_json::json!({"strike_count": strike_count}).to_string(),
+                    serde_json::json!({"name": username, "strike_count": strike_count}).to_string(),
                 ))
                 .expect("Failed to render response"))
         }

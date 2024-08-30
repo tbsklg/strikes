@@ -17,15 +17,9 @@ async fn main() {
             Ok(strikes) => print_strikes(name, strikes),
             Err(err) => eprintln!("Failed to add strike: {}", err),
         },
-        Command::Ls => {
-            let tarnished = client.get_tarnished();
-
-            if tarnished.is_empty() {
-                println!("No one has been tarnished yet!");
-                return;
-            }
-
-            print_as_table(tarnished);
+        Command::Ls => match client.get_tarnished().await {
+            Ok(tarnished) => print_as_table(tarnished),
+            Err(err) => eprintln!("Failed to get strikes: {}", err),
         }
         Command::Clear => {
             client.clear_strikes();
