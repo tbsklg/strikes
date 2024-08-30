@@ -55,7 +55,7 @@ Provide a configuration file at ./strikes/configuration.yaml. The remote server 
 
 ```yaml
 remote:
-    base_rul: "https://strikes.example.com"
+    base_url: "https://strikes.example.com"
     api_key: "your-api-key"
 local:
     db_path: "/path/to/db.json"
