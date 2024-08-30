@@ -11,6 +11,13 @@ name = "put_strikes"
 path = "src/health.rs"
 name = "health"
 
+[[bin]]
+path = "src/get_strikes.rs"
+name = "get_strikes"
+
+[lib]
+path = "src/lib.rs"
+
 [dependencies]
 aws-config = "1.5.5"
 aws-sdk-dynamodb = "1.42.0"

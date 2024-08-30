@@ -7,7 +7,7 @@ use aws_sdk_dynamodb::{
 use lambda_http::{run, service_fn, tracing, Body, Error, Request, RequestExt, Response};
 use std::collections::HashMap;
 
-async fn function_handler(request: Request) -> Result<Response<Body>, Error> {
+pub async fn function_handler(request: Request) -> Result<Response<Body>, Error> {
     let params = request.path_parameters();
     let user = params.first("user");
 
@@ -31,7 +31,18 @@ async fn function_handler(request: Request) -> Result<Response<Body>, Error> {
     }
 }
 
-async fn increment_strikes(username: &str, table_name: &str, client: &Client) -> Result<u8, Error> {
+#[tokio::main]
+async fn main() -> Result<(), Error> {
+    tracing::init_default_subscriber();
+
+    run(service_fn(function_handler)).await
+}
+
+pub async fn increment_strikes(
+    username: &str,
+    table_name: &str,
+    client: &Client,
+) -> Result<u8, Error> {
     let request = client
         .update_item()
         .table_name(table_name.to_string())
@@ -44,14 +55,14 @@ async fn increment_strikes(username: &str, table_name: &str, client: &Client) ->
         .map_err(|err| err.into_service_error());
 
     match request {
-        Err(err) => match ProvideErrorMetadata::code(&err) {
-            Some("ValidationException") => add_user(username, &table_name, &client).await,
-            _ => return Err(err.into()),
-        },
         Ok(response) => {
             let strike_count = extract_strike_count(response.attributes().unwrap());
             Ok(strike_count)
         }
+        Err(err) => match ProvideErrorMetadata::code(&err) {
+            Some("ValidationException") => add_user(username, &table_name, &client).await,
+            _ => return Err(err.into()),
+        },
     }
 }
 
@@ -69,71 +80,4 @@ async fn add_user(username: &str, table_name: &str, client: &Client) -> Result<u
         .await?;
 
     Ok(1)
-}
-
-#[tokio::main]
-async fn main() -> Result<(), Error> {
-    tracing::init_default_subscriber();
-
-    run(service_fn(function_handler)).await
-}
-
-#[cfg(test)]
-mod integrationtests {
-    use super::*;
-    use aws_config::BehaviorVersion;
-    use aws_sdk_dynamodb::{
-        config::Builder,
-        types::{AttributeDefinition, BillingMode, KeySchemaElement, KeyType, ScalarAttributeType},
-        Client, Error,
-    };
-    use uuid::Uuid;
-
-    async fn create_random_table(client: &Client) -> Result<String, Error> {
-        let random_table_name = format!("Strikes_{}", Uuid::new_v4());
-        let pk = AttributeDefinition::builder()
-            .attribute_name("UserId")
-            .attribute_type(ScalarAttributeType::S)
-            .build()?;
-
-        let ks = KeySchemaElement::builder()
-            .attribute_name("UserId")
-            .key_type(KeyType::Hash)
-            .build()?;
-
-        client
-            .create_table()
-            .table_name(&random_table_name)
-            .key_schema(ks)
-            .attribute_definitions(pk)
-            .billing_mode(BillingMode::PayPerRequest)
-            .send()
-            .await?;
-
-        Ok(random_table_name)
-    }
-
-    #[tokio::test]
-    async fn it_should_add_some_strikes() -> Result<(), Box<dyn std::error::Error>> {
-        let config = aws_config::load_defaults(BehaviorVersion::latest()).await;
-        let local_config = Builder::from(&config)
-            .endpoint_url("http://localhost:8000")
-            .build();
-        let client = Client::from_conf(local_config);
-
-        let table_name = create_random_table(&client).await.unwrap();
-        let _ = increment_strikes("heinz", &table_name, &client)
-            .await
-            .unwrap();
-        let _ = increment_strikes("heinz", &table_name, &client)
-            .await
-            .unwrap();
-        let strikes = increment_strikes("heinz", &table_name, &client)
-            .await
-            .unwrap();
-
-        assert_eq!(strikes, 3);
-
-        Ok(())
-    }
 }
