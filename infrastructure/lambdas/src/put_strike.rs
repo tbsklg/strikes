@@ -32,6 +32,7 @@ pub async fn function_handler(request: Request) -> Result<Response<Body>, Error>
 }
 
 #[tokio::main]
+#[allow(dead_code)]
 async fn main() -> Result<(), Error> {
     tracing::init_default_subscriber();
 
@@ -60,8 +61,8 @@ pub async fn increment_strikes(
             Ok(strike_count)
         }
         Err(err) => match ProvideErrorMetadata::code(&err) {
-            Some("ValidationException") => add_user(username, &table_name, &client).await,
-            _ => return Err(err.into()),
+            Some("ValidationException") => add_user(username, table_name, client).await,
+            _ => Err(err.into()),
         },
     }
 }

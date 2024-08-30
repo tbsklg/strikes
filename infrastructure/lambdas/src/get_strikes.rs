@@ -1,3 +1,4 @@
+use aws_config::BehaviorVersion;
 use aws_sdk_dynamodb::{operation::scan::ScanOutput, Client};
 use lambda_http::{run, service_fn, tracing, Body, Error, Request, Response};
 
@@ -7,8 +8,8 @@ pub struct StrikeEntity {
     pub strikes: u8,
 }
 
-async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
-    let config = aws_config::load_from_env().await;
+async fn function_handler(_event: Request) -> Result<Response<Body>, Error> {
+    let config = aws_config::load_defaults(BehaviorVersion::latest()).await;
     let client = Client::new(&config);
 
     let strikes = get_strikes("Strikes", &client).await?;
@@ -51,6 +52,7 @@ pub async fn get_strikes(table_name: &str, client: &Client) -> Result<Vec<Strike
 }
 
 #[tokio::main]
+#[allow(dead_code)]
 async fn main() -> Result<(), Error> {
     tracing::init_default_subscriber();
 

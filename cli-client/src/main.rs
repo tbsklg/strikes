@@ -20,7 +20,7 @@ async fn main() {
         Command::Ls => match client.get_tarnished().await {
             Ok(tarnished) => print_as_table(tarnished),
             Err(err) => eprintln!("Failed to get strikes: {}", err),
-        }
+        },
         Command::Clear => {
             client.clear_strikes();
             println!("All strikes have been cleared!");

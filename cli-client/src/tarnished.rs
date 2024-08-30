@@ -26,9 +26,9 @@ impl Tarnished {
 
     pub fn from_vec(sr: Vec<StrikesResponse>) -> Vec<Tarnished> {
         sr.iter()
-            .map(|StrikesResponse { name, strike_count } | Tarnished {
+            .map(|StrikesResponse { name, strike_count }| Tarnished {
                 name: name.to_string(),
-                strikes: *strike_count
+                strikes: *strike_count,
             })
             .collect()
     }

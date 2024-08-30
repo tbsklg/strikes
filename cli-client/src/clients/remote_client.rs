@@ -115,7 +115,7 @@ impl HttpClient {
 }
 
 #[cfg(test)]
-mod unittests {
+mod unit_tests {
     use wiremock::{matchers::any, Mock, MockServer, ResponseTemplate};
 
     use crate::{clients::remote_client::HttpClient, tarnished::Tarnished};
@@ -125,7 +125,8 @@ mod unittests {
         let mock_server = MockServer::start().await;
         Mock::given(any())
             .respond_with(
-                ResponseTemplate::new(200).set_body_json(serde_json::json!({"name": "guenther", "strike_count": 3})),
+                ResponseTemplate::new(200)
+                    .set_body_json(serde_json::json!({"name": "guenther", "strike_count": 3})),
             )
             .expect(1)
             .mount(&mock_server)
