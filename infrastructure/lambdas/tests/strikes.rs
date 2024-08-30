@@ -6,7 +6,7 @@ use aws_sdk_dynamodb::{
 };
 use strikes::{
     get_strikes::{get_strikes, StrikeEntity},
-    put_strikes::increment_strikes,
+    put_strike::increment_strikes,
 };
 use uuid::Uuid;
 

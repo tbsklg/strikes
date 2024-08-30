@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-path = "src/put_strikes.rs"
-name = "put_strikes"
+path = "src/put_strike.rs"
+name = "put_strike"
 
 [[bin]]
 path = "src/health.rs"
