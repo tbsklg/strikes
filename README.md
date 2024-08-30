@@ -83,8 +83,14 @@ terraform init
 terraform plan
 terraform apply
 ```
-This will create a S3 bucket and a DynamoDB table to store the terraform state. Afterwards you can deploy the infrastructure by navigating to the infrastructure directory and running:
+This will create a S3 bucket and a DynamoDB table to store the terraform state. 
 
+Then build releases for all lambda functions within the /lambdas folder:
+```bash
+cargo lambda build --release
+```
+
+Afterwards you can deploy the infrastructure by navigating to the infrastructure directory and running:
 ```bash
 terraform init
 terraform plan

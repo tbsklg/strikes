@@ -9,6 +9,7 @@ async fn function_handler(_request: Request) -> Result<Response<Body>, Error> {
 }
 
 #[tokio::main]
+#[allow(dead_code)]
 async fn main() -> Result<(), Error> {
     tracing::init_default_subscriber();
 

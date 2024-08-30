@@ -11,14 +11,14 @@ pub struct LocalClient {
 
 #[async_trait]
 impl StrikeClient for LocalClient {
-    async fn add_strike(&self, name: &str) -> Result<i8, String> {
+    async fn add_strike(&self, name: &str) -> Result<u8, String> {
         let db_path = &self.db_path;
         if !db_path.exists() {
             std::fs::create_dir_all(db_path.parent().unwrap()).unwrap();
         }
 
         let raw = std::fs::read_to_string(db_path).unwrap_or_else(|_| json!({}).to_string());
-        let db: &mut HashMap<String, i8> = &mut serde_json::from_str(&raw).unwrap();
+        let db: &mut HashMap<String, u8> = &mut serde_json::from_str(&raw).unwrap();
         let count = db.get(name).unwrap_or(&0);
         db.insert(name.to_string(), count + 1);
 
@@ -27,14 +27,14 @@ impl StrikeClient for LocalClient {
         Ok(*db.get(name).unwrap())
     }
 
-    fn get_tarnished(&self) -> Vec<Tarnished> {
+    async fn get_tarnished(&self) -> Result<Vec<Tarnished>, String> {
         let db_path = &self.db_path;
         let raw = std::fs::read_to_string(db_path).unwrap_or_else(|_| json!({}).to_string());
         let db: HashMap<String, u8> = serde_json::from_str(&raw).unwrap_or(HashMap::new());
 
-        Tarnished::sort_desc_by_strike(Tarnished::as_tarnished(db))
+        Ok(Tarnished::sort_desc_by_strike(Tarnished::from_map(db))
             .into_iter()
-            .collect()
+            .collect())
     }
 
     fn clear_strikes(&self) {
@@ -80,7 +80,7 @@ mod unit_tests {
         .iter()
         .cloned()
         .collect::<HashMap<String, u8>>();
-        let tarnished = Tarnished::sort_desc_by_strike(Tarnished::as_tarnished(raw.clone()));
+        let tarnished = Tarnished::sort_desc_by_strike(Tarnished::from_map(raw.clone()));
 
         assert_eq!(
             tarnished,
@@ -117,7 +117,7 @@ mod integration_tests {
         };
 
         let _ = client.add_strike("guenther").await?;
-        let strikes = client.get_tarnished();
+        let strikes = client.get_tarnished().await.unwrap();
 
         assert_eq!(
             strikes,
@@ -140,7 +140,7 @@ mod integration_tests {
         let _ = client.add_strike("heinz").await?;
         let _ = client.add_strike("guenther").await?;
 
-        let strikes = client.get_tarnished();
+        let strikes = client.get_tarnished().await.unwrap();
 
         assert_eq!(
             strikes,
@@ -159,8 +159,8 @@ mod integration_tests {
         Ok(())
     }
 
-    #[test]
-    fn it_should_clear_strikes() -> Result<(), Box<dyn std::error::Error>> {
+    #[tokio::test]
+    async fn it_should_clear_strikes() -> Result<(), Box<dyn std::error::Error>> {
         let file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
         let client = LocalClient {
             db_path: file.to_path_buf(),
@@ -171,7 +171,9 @@ mod integration_tests {
 
         client.clear_strikes();
 
-        assert!(client.get_tarnished().is_empty());
+        let strikes = client.get_tarnished().await.unwrap();
+
+        assert!(strikes.is_empty());
 
         Ok(())
     }

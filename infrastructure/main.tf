@@ -32,33 +32,60 @@ resource "aws_api_gateway_resource" "strikes" {
   rest_api_id = aws_api_gateway_rest_api.strikes.id
 }
 
-resource "aws_api_gateway_resource" "user" {
+
+resource "aws_api_gateway_method" "get_strikes" {
+  authorization    = "NONE"
+  http_method      = "GET"
+  resource_id      = aws_api_gateway_resource.strikes.id
+  rest_api_id      = aws_api_gateway_rest_api.strikes.id
+  api_key_required = true
+}
+
+resource "aws_api_gateway_integration" "get_strikes" {
+  http_method             = aws_api_gateway_method.get_strikes.http_method
+  resource_id             = aws_api_gateway_resource.strikes.id
+  rest_api_id             = aws_api_gateway_rest_api.strikes.id
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = module.lambdas.get_strikes_lambda_invoke_arn
+}
+
+resource "aws_lambda_permission" "apigw_invoke_get_strikes_lambda" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambdas.get_strikes_lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"
+}
+
+resource "aws_api_gateway_resource" "put_strike" {
   parent_id   = aws_api_gateway_resource.strikes.id
   path_part   = "{user}"
   rest_api_id = aws_api_gateway_rest_api.strikes.id
 }
 
-resource "aws_api_gateway_method" "user" {
+resource "aws_api_gateway_method" "put_strike" {
   authorization    = "NONE"
   http_method      = "PUT"
-  resource_id      = aws_api_gateway_resource.user.id
+  resource_id      = aws_api_gateway_resource.put_strike.id
   rest_api_id      = aws_api_gateway_rest_api.strikes.id
   api_key_required = true
 }
 
-resource "aws_api_gateway_integration" "user" {
-  http_method             = aws_api_gateway_method.user.http_method
-  resource_id             = aws_api_gateway_resource.user.id
+resource "aws_api_gateway_integration" "put_strike" {
+  http_method             = aws_api_gateway_method.put_strike.http_method
+  resource_id             = aws_api_gateway_resource.put_strike.id
   rest_api_id             = aws_api_gateway_rest_api.strikes.id
   type                    = "AWS_PROXY"
   integration_http_method = "POST"
-  uri                     = module.lambdas.put_strikes_lambda_invoke_arn
+  uri                     = module.lambdas.put_strike_lambda_invoke_arn
 }
 
-resource "aws_lambda_permission" "apigw_invoke_user_lambda" {
+resource "aws_lambda_permission" "apigw_invoke_put_strike_lambda" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = module.lambdas.put_strikes_lambda_function_name
+  function_name = module.lambdas.put_strike_lambda_function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"
@@ -104,9 +131,12 @@ resource "aws_api_gateway_deployment" "strikes" {
       aws_api_gateway_resource.health.id,
       aws_api_gateway_method.health.id,
       aws_api_gateway_integration.health.id,
-      aws_api_gateway_resource.user.id,
-      aws_api_gateway_method.user.id,
-      aws_api_gateway_integration.user.id,
+      aws_api_gateway_resource.put_strike.id,
+      aws_api_gateway_method.put_strike.id,
+      aws_api_gateway_integration.put_strike.id,
+      aws_api_gateway_resource.strikes.id,
+      aws_api_gateway_method.get_strikes.id,
+      aws_api_gateway_integration.get_strikes.id,
     ]))
   }
 
