@@ -116,7 +116,8 @@ fn it_should_clear_all_strikes() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[test]
-fn it_should_reject_usernames_longer_than_20_characters() -> Result<(), Box<dyn std::error::Error>> {
+fn it_should_reject_usernames_longer_than_20_characters() -> Result<(), Box<dyn std::error::Error>>
+{
     let db_file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
     let config_file = assert_fs::NamedTempFile::new("./tests/fixtures/configuration.yaml")?;
     config_file.write_str(

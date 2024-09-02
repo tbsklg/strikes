@@ -41,4 +41,3 @@ fn parse_username(s: &str) -> Result<String, Box<dyn std::error::Error + Send + 
 
     Ok(s.to_lowercase())
 }
-
