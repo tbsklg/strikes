@@ -3,7 +3,10 @@ use clap::{Parser, Subcommand};
 #[derive(Subcommand, Clone, Debug)]
 pub enum Command {
     #[command(about = "Add a strike", alias = "s")]
-    Strike { name: String },
+    Strike {
+        #[arg(help = "Name of the tarnished", value_parser = parse_username)]
+        name: String,
+    },
     #[command(about = "List all strikes")]
     Ls,
     #[command(about = "Clear strikes", alias = "c")]
@@ -26,3 +29,16 @@ pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Command>,
 }
+
+fn parse_username(s: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync + 'static>> {
+    if s.is_empty() {
+        return Err("Username cannot be empty".into());
+    }
+
+    if s.len() > 20 {
+        return Err("Username cannot be longer than 20 characters".into());
+    }
+
+    Ok(s.to_lowercase())
+}
+

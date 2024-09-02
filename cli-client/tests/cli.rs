@@ -114,3 +114,27 @@ fn it_should_clear_all_strikes() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
+
+#[test]
+fn it_should_reject_usernames_longer_than_20_characters() -> Result<(), Box<dyn std::error::Error>> {
+    let db_file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
+    let config_file = assert_fs::NamedTempFile::new("./tests/fixtures/configuration.yaml")?;
+    config_file.write_str(
+        format!(
+            "{{\"local\": {{\"db_path\": \"{}\"}}}}",
+            db_file.path().to_str().unwrap()
+        )
+        .as_str(),
+    )?;
+
+    let mut cmd = Command::cargo_bin("strikes")?;
+    cmd.arg("--config-path")
+        .arg(config_file.path())
+        .arg("strike")
+        .arg("guentherguentherguenther");
+    cmd.assert().failure().stderr(predicate::str::contains(
+        "Username cannot be longer than 20 characters",
+    ));
+
+    Ok(())
+}
