@@ -16,6 +16,13 @@ pub async fn function_handler(request: Request) -> Result<Response<Body>, Error>
 
     match user {
         Some(username) => {
+            if username.is_empty() || username.len() > 20 {
+                return Ok(Response::builder()
+                    .status(400)
+                    .body(Body::Text("Invalid username".to_string()))
+                    .expect("Failed to render response"));
+            }
+
             let strike_count = increment_strikes(username, "Strikes", &client).await?;
             Ok(Response::builder()
                 .status(200)
