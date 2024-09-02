@@ -19,9 +19,7 @@ async fn main() {
             Err(err) => eprintln!("Failed to add strike: {}", err),
         },
         Command::Ls => match client.get_tarnished().await {
-            Ok(tarnished) => print_as_table(
-               Tarnished::sort_desc_by_strike(tarnished), 
-            ),
+            Ok(tarnished) => print_as_table(Tarnished::sort_desc_by_strike(tarnished)),
             Err(err) => eprintln!("Failed to get strikes: {}", err),
         },
         Command::Clear => {
