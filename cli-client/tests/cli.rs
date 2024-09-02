@@ -56,9 +56,13 @@ fn it_should_list_strikes_in_descending_order() -> Result<(), Box<dyn std::error
 
     cmd.arg("--config-path").arg(config_file.path()).arg("ls");
 
-    let expected_output = "Tarnished  | Strikes    |\n\
-                           heinz      | 2          |\n\
-                           guenther   | 1          |\n";
+    let expected_output = "+-----------+---------+\n\
+                           | Tarnished | Strikes |\n\
+                           +=====================+\n\
+                           | heinz     | 2       |\n\
+                           |-----------+---------|\n\
+                           | guenther  | 1       |\n\
+                           +-----------+---------+\n";
 
     cmd.assert().success().stdout(expected_output);
 
@@ -86,9 +90,13 @@ fn it_should_clear_all_strikes() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut cmd = Command::cargo_bin("strikes")?;
     cmd.arg("--config-path").arg(config_file.path()).arg("ls");
-    cmd.assert()
-        .success()
-        .stdout("Tarnished  | Strikes    |\nguenther   | 1          |\n");
+    let expected_output = "+-----------+---------+\n\
+                           | Tarnished | Strikes |\n\
+                           +=====================+\n\
+                           | guenther  | 1       |\n\
+                           +-----------+---------+\n";
+
+    cmd.assert().success().stdout(expected_output);
 
     let mut cmd = Command::cargo_bin("strikes")?;
     cmd.arg("--config-path")
@@ -103,6 +111,31 @@ fn it_should_clear_all_strikes() -> Result<(), Box<dyn std::error::Error>> {
     cmd.assert()
         .success()
         .stdout("No one has been tarnished yet!\n");
+
+    Ok(())
+}
+
+#[test]
+fn it_should_reject_usernames_longer_than_20_characters() -> Result<(), Box<dyn std::error::Error>>
+{
+    let db_file = assert_fs::NamedTempFile::new("./tests/fixtures/db.json")?;
+    let config_file = assert_fs::NamedTempFile::new("./tests/fixtures/configuration.yaml")?;
+    config_file.write_str(
+        format!(
+            "{{\"local\": {{\"db_path\": \"{}\"}}}}",
+            db_file.path().to_str().unwrap()
+        )
+        .as_str(),
+    )?;
+
+    let mut cmd = Command::cargo_bin("strikes")?;
+    cmd.arg("--config-path")
+        .arg(config_file.path())
+        .arg("strike")
+        .arg("guentherguentherguenther");
+    cmd.assert().failure().stderr(predicate::str::contains(
+        "Username cannot be longer than 20 characters",
+    ));
 
     Ok(())
 }

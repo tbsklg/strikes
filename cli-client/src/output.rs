@@ -1,4 +1,5 @@
 use crate::tarnished::Tarnished;
+use comfy_table::Table;
 
 pub fn print_as_table(tarnished: Vec<Tarnished>) {
     if tarnished.is_empty() {
@@ -6,10 +7,14 @@ pub fn print_as_table(tarnished: Vec<Tarnished>) {
         return;
     }
 
-    println!("{0: <10} | {1: <10} |", "Tarnished", "Strikes");
+    let mut table = Table::new();
+    table.set_header(vec!["Tarnished", "Strikes"]);
+
     for tarnished in tarnished {
-        println!("{0: <10} | {1: <10} |", tarnished.name, tarnished.strikes);
+        table.add_row(vec![tarnished.name, tarnished.strikes.to_string()]);
     }
+
+    println!("{table}");
 }
 
 pub fn print_strikes(name: &str, strikes: u8) {
