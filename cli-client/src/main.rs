@@ -5,6 +5,7 @@ use strikes::clients::local_client::LocalClient;
 use strikes::clients::remote_client::RemoteClient;
 use strikes::configuration::{get_configuration, Settings};
 use strikes::output::{print_as_table, print_strikes};
+use strikes::tarnished::Tarnished;
 
 #[tokio::main]
 async fn main() {
@@ -18,7 +19,9 @@ async fn main() {
             Err(err) => eprintln!("Failed to add strike: {}", err),
         },
         Command::Ls => match client.get_tarnished().await {
-            Ok(tarnished) => print_as_table(tarnished),
+            Ok(tarnished) => print_as_table(
+               Tarnished::sort_desc_by_strike(tarnished), 
+            ),
             Err(err) => eprintln!("Failed to get strikes: {}", err),
         },
         Command::Clear => {
