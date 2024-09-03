@@ -26,7 +26,7 @@ impl Default for Settings {
             local: {
                 Some(LocalSettings {
                     db_path: std::env::var("HOME")
-                        .map(|home| PathBuf::from(home).join(".strikes/db.json"))
+                        .map(|home| PathBuf::from(home).join(".config/strikes/db.json"))
                         .unwrap(),
                 })
             },
@@ -39,7 +39,7 @@ pub fn get_configuration(args: &Cli) -> Settings {
     let config_path = args
         .config_path
         .clone()
-        .unwrap_or_else(|| PathBuf::from(home).join(".strikes/configuration.yaml"));
+        .unwrap_or_else(|| PathBuf::from(home).join(".config/strikes/configuration.yaml"));
 
     let settings = config::Config::builder().add_source(config::File::new(
         config_path.to_str().unwrap(),
@@ -77,7 +77,7 @@ mod tests {
         );
         assert_eq!(
             configuration.local.unwrap().db_path,
-            PathBuf::from("/home/user/.strikes")
+            PathBuf::from("/home/user/.config/strikes/db.json")
         );
     }
 
@@ -93,7 +93,7 @@ mod tests {
 
         assert_eq!(
             configuration.local.unwrap().db_path,
-            PathBuf::from("/home/user/.strikes/db.json")
+            PathBuf::from("/home/user/.config/strikes/db.json")
         );
     }
 
@@ -109,7 +109,7 @@ mod tests {
 
         assert_eq!(
             configuration.local.unwrap().db_path,
-            PathBuf::from("/home/user/.strikes/db.json")
+            PathBuf::from("/home/user/.config/strikes/db.json")
         )
     }
 }
