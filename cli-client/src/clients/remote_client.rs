@@ -40,7 +40,9 @@ impl StrikeClient for RemoteClient {
         client.get_strikes().await
     }
 
-    fn clear_strikes(&self) {}
+    async fn clear_strikes(&self) -> Result<(), String> {
+        Ok(()) 
+    }
 
     async fn check_health(&self) -> Result<(), String> {
         let client = HttpClient {
