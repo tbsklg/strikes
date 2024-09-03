@@ -51,7 +51,7 @@ You can use the local client without a remote server.
 It will generate a JSON file where the strikes are stored. 
 
 ## Configuration file
-Provide a configuration file at ./strikes/configuration.yaml. The remote server configuration has precedence over the local configuration.
+Provide a configuration file at .config/strikes/configuration.yaml. The remote server configuration has precedence over the local configuration.
 
 ```yaml
 remote:
