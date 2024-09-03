@@ -1,4 +1,13 @@
 # Strikes
+Strikes is a simple CLI tool to blame people for their mistakes.
+
+Keep in mind that it is not meant to be used in a serious way. It is just a fun project to
+play around with Rust and AWS Lambda. In its heart it is a simple crud application.
+
+## Description
+Strikes can be used to track (add, list, clear) strikes for a person, team or something else you want to track.
+The tool can be used with a remote server or locally.
+
 ## Installation
 
 On macOS using homebrew:
