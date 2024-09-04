@@ -5,6 +5,7 @@ use aws_sdk_dynamodb::{
     Client, Error,
 };
 use strikes::{
+    delete_all_strikes::delete_all_strikes,
     get_strikes::{get_strikes, StrikeEntity},
     put_strike::increment_strikes,
 };
@@ -97,6 +98,37 @@ async fn it_should_get_a_list_of_strikes() -> Result<(), Box<dyn std::error::Err
             }
         ]
     );
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn it_should_delete_all_items() -> Result<(), Box<dyn std::error::Error>> {
+    let config = aws_config::load_defaults(BehaviorVersion::latest()).await;
+    let local_config = Builder::from(&config)
+        .endpoint_url("http://localhost:8000")
+        .build();
+    let client = Client::from_conf(local_config);
+
+    let table_name = create_random_table(&client).await.unwrap();
+
+    let _ = increment_strikes("heinz", &table_name, &client)
+        .await
+        .unwrap();
+    let _ = increment_strikes("heinz", &table_name, &client)
+        .await
+        .unwrap();
+    let _ = increment_strikes("heinz", &table_name, &client)
+        .await
+        .unwrap();
+    let _ = increment_strikes("guenther", &table_name, &client)
+        .await
+        .unwrap();
+
+    let _ = delete_all_strikes(&table_name, &client).await.unwrap();
+    let strikes = get_strikes(&table_name, &client).await.unwrap();
+
+    assert_eq!(strikes, vec![]);
 
     Ok(())
 }
