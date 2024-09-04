@@ -160,6 +160,9 @@ resource "aws_lambda_permission" "apigw_invoke_health_lambda" {
   source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"
 }
 
+# -----------------------------------------------------------------------------
+# DEPLOYMENT 
+# -----------------------------------------------------------------------------
 resource "aws_api_gateway_deployment" "strikes" {
   rest_api_id = aws_api_gateway_rest_api.strikes.id
 
@@ -184,15 +187,25 @@ resource "aws_api_gateway_deployment" "strikes" {
   }
 }
 
-resource "aws_api_gateway_api_key" "strikes" {
-  name = "strikes-api-key"
-}
-
+# -----------------------------------------------------------------------------
+# STAGE 
+# -----------------------------------------------------------------------------
 resource "aws_api_gateway_stage" "strikes" {
   deployment_id = aws_api_gateway_deployment.strikes.id
   rest_api_id   = aws_api_gateway_rest_api.strikes.id
 
   stage_name = "v1"
+}
+
+# -----------------------------------------------------------------------------
+# API-KEYS 
+# -----------------------------------------------------------------------------
+resource "aws_api_gateway_api_key" "strikes" {
+  name = "strikes-api-key"
+}
+
+resource "aws_api_gateway_api_key" "dev" {
+  name = "dev"
 }
 
 resource "aws_api_gateway_usage_plan" "strikes" {
@@ -219,4 +232,20 @@ resource "aws_api_gateway_usage_plan_key" "main" {
   key_id        = aws_api_gateway_api_key.strikes.id
   key_type      = "API_KEY"
   usage_plan_id = aws_api_gateway_usage_plan.strikes.id
+}
+
+resource "aws_api_gateway_usage_plan" "dev" {
+  name         = "dev"
+  product_code = "MYCODE"
+
+  api_stages {
+    api_id = aws_api_gateway_rest_api.strikes.id
+    stage  = aws_api_gateway_stage.strikes.stage_name
+  }
+}
+
+resource "aws_api_gateway_usage_plan_key" "dev" {
+  key_id        = aws_api_gateway_api_key.dev.id
+  key_type      = "API_KEY"
+  usage_plan_id = aws_api_gateway_usage_plan.dev.id
 }
