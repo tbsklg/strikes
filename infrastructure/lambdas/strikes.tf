@@ -68,6 +68,7 @@ data "aws_iam_policy_document" "dynamo_delete" {
 
     actions = [
       "dynamodb:DeleteItem",
+      "dynamodb:Scan",
     ]
 
     resources = [

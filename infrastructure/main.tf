@@ -174,6 +174,8 @@ resource "aws_api_gateway_deployment" "strikes" {
       aws_api_gateway_resource.strikes.id,
       aws_api_gateway_method.get_strikes.id,
       aws_api_gateway_integration.get_strikes.id,
+      aws_api_gateway_method.delete_strikes.id,
+      aws_api_gateway_integration.delete_strikes.id,
     ]))
   }
 
