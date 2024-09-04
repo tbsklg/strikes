@@ -1,12 +1,7 @@
 use aws_config::BehaviorVersion;
-use aws_sdk_dynamodb::{operation::scan::ScanOutput, Client};
+use aws_sdk_dynamodb::Client;
 use lambda_http::{run, service_fn, tracing, Body, Error, Request, Response};
-
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub struct StrikeEntity {
-    pub user_id: String,
-    pub strikes: u8,
-}
+use lib::strikes_db::get_strikes;
 
 async fn function_handler(_event: Request) -> Result<Response<Body>, Error> {
     let config = aws_config::load_defaults(BehaviorVersion::latest()).await;
@@ -28,27 +23,6 @@ async fn function_handler(_event: Request) -> Result<Response<Body>, Error> {
         .header("Content-Type", "application/json")
         .body(Body::Text(serde_json::json!(body).to_string()))
         .expect("Failed to render response"))
-}
-
-pub async fn get_strikes(table_name: &str, client: &Client) -> Result<Vec<StrikeEntity>, Error> {
-    let request: ScanOutput = client.scan().table_name(table_name).send().await?;
-
-    request
-        .items()
-        .iter()
-        .map(|item| {
-            let user_id = item.get("UserId").unwrap().as_s().unwrap().to_string();
-            let strikes = item
-                .get("Strikes")
-                .unwrap()
-                .as_n()
-                .unwrap()
-                .parse()
-                .unwrap();
-
-            Ok(StrikeEntity { user_id, strikes })
-        })
-        .collect()
 }
 
 #[tokio::main]

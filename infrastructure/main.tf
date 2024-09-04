@@ -32,7 +32,9 @@ resource "aws_api_gateway_resource" "strikes" {
   rest_api_id = aws_api_gateway_rest_api.strikes.id
 }
 
-
+# -----------------------------------------------------------------------------
+# GET STRIKES
+# -----------------------------------------------------------------------------
 resource "aws_api_gateway_method" "get_strikes" {
   authorization    = "NONE"
   http_method      = "GET"
@@ -59,6 +61,38 @@ resource "aws_lambda_permission" "apigw_invoke_get_strikes_lambda" {
   source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"
 }
 
+# -----------------------------------------------------------------------------
+# DELETE STRIKES
+# -----------------------------------------------------------------------------
+resource "aws_api_gateway_method" "delete_strikes" {
+  authorization    = "NONE"
+  http_method      = "DELETE"
+  resource_id      = aws_api_gateway_resource.strikes.id
+  rest_api_id      = aws_api_gateway_rest_api.strikes.id
+  api_key_required = true
+}
+
+resource "aws_api_gateway_integration" "delete_strikes" {
+  http_method             = aws_api_gateway_method.delete_strikes.http_method
+  resource_id             = aws_api_gateway_resource.strikes.id
+  rest_api_id             = aws_api_gateway_rest_api.strikes.id
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = module.lambdas.delete_strikes_lambda_invoke_arn
+}
+
+resource "aws_lambda_permission" "apigw_invoke_delete_strikes_lambda" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambdas.delete_strikes_lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"
+}
+
+# -----------------------------------------------------------------------------
+# PUT STRIKE
+# -----------------------------------------------------------------------------
 resource "aws_api_gateway_resource" "put_strike" {
   parent_id   = aws_api_gateway_resource.strikes.id
   path_part   = "{user}"
@@ -91,6 +125,9 @@ resource "aws_lambda_permission" "apigw_invoke_put_strike_lambda" {
   source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"
 }
 
+# -----------------------------------------------------------------------------
+# HEALTH
+# -----------------------------------------------------------------------------
 resource "aws_api_gateway_resource" "health" {
   parent_id   = aws_api_gateway_rest_api.strikes.root_resource_id
   path_part   = "health"

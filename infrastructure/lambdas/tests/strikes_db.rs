@@ -4,11 +4,7 @@ use aws_sdk_dynamodb::{
     types::{AttributeDefinition, BillingMode, KeySchemaElement, KeyType, ScalarAttributeType},
     Client, Error,
 };
-use strikes::{
-    delete_all_strikes::delete_all_strikes,
-    get_strikes::{get_strikes, StrikeEntity},
-    put_strike::increment_strikes,
-};
+use lib::strikes_db::{delete_all_strikes, get_strikes, increment_strikes, StrikeEntity};
 use uuid::Uuid;
 
 async fn create_random_table(client: &Client) -> Result<String, Error> {
