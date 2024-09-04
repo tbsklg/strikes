@@ -22,10 +22,10 @@ async fn main() {
             Ok(tarnished) => print_as_table(Tarnished::sort_desc_by_strike(tarnished)),
             Err(err) => eprintln!("Failed to get strikes: {}", err),
         },
-        Command::Clear => {
-            client.clear_strikes();
-            println!("All strikes have been cleared!");
-        }
+        Command::Clear => match client.clear_strikes().await {
+            Ok(()) => println!("All strikes have been cleared!"),
+            Err(err) => eprintln!("Faild to clear all strikes: {}", err),
+        },
         Command::CheckHealth => match client.check_health().await {
             Ok(_) => println!("Everything is fine!"),
             Err(err) => eprintln!("Failed to check health: {}", err),

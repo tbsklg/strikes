@@ -37,11 +37,13 @@ impl StrikeClient for LocalClient {
             .collect())
     }
 
-    fn clear_strikes(&self) {
+    async fn clear_strikes(&self) -> Result<(), String> {
         let db_path = &self.db_path;
         if db_path.exists() {
             std::fs::write(db_path, json!({}).to_string()).unwrap();
         }
+
+        Ok(())
     }
 
     async fn check_health(&self) -> Result<(), String> {
@@ -169,7 +171,7 @@ mod integration_tests {
         let _ = client.add_strike("guenther");
         let _ = client.add_strike("heinz");
 
-        client.clear_strikes();
+        let _ = client.clear_strikes().await;
 
         let strikes = client.get_tarnished().await.unwrap();
 

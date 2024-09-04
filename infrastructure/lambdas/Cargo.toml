@@ -4,6 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
+path = "src/get_strikes.rs"
+name = "get_strikes"
+
+[[bin]]
+path = "src/delete_strikes.rs"
+name = "delete_strikes"
+
+[[bin]]
 path = "src/put_strike.rs"
 name = "put_strike"
 
@@ -11,12 +19,9 @@ name = "put_strike"
 path = "src/health.rs"
 name = "health"
 
-[[bin]]
-path = "src/get_strikes.rs"
-name = "get_strikes"
-
 [lib]
 path = "src/lib.rs"
+name = "lib"
 
 [dependencies]
 aws-config = "1.5.5"

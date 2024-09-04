@@ -40,7 +40,14 @@ impl StrikeClient for RemoteClient {
         client.get_strikes().await
     }
 
-    fn clear_strikes(&self) {}
+    async fn clear_strikes(&self) -> Result<(), String> {
+        let client = HttpClient {
+            base_url: self.base_url.clone(),
+            api_key: self.api_key.clone(),
+        };
+
+        client.delete_strikes().await
+    }
 
     async fn check_health(&self) -> Result<(), String> {
         let client = HttpClient {
@@ -112,6 +119,21 @@ impl HttpClient {
             err => Err(err.to_string()),
         }
     }
+
+    async fn delete_strikes(&self) -> Result<(), String> {
+        let client = reqwest::Client::new();
+        let response = client
+            .delete(format!("{}/strikes", &self.base_url))
+            .header("x-api-key", &self.api_key)
+            .send()
+            .await
+            .expect("Failed to execute request");
+
+        match response.status() {
+            reqwest::StatusCode::OK => Ok(()),
+            err => Err(err.to_string()),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -176,6 +198,26 @@ mod unit_tests {
             ],
             strikes
         );
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn it_should_delete_all_strikes() -> Result<(), Box<dyn std::error::Error>> {
+        let mock_server = MockServer::start().await;
+        Mock::given(any())
+            .respond_with(ResponseTemplate::new(200))
+            .mount(&mock_server)
+            .await;
+
+        let client = HttpClient {
+            api_key: "abc".to_string(),
+            base_url: mock_server.uri(),
+        };
+
+        let strikes = client.delete_strikes().await?;
+
+        assert_eq!((), strikes);
 
         Ok(())
     }
