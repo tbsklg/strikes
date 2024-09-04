@@ -2,7 +2,7 @@
 Strikes is a simple CLI tool to hold people or things accountable for their mistakes.
 
 Keep in mind that it is not intended for serious use. It's just a fun project to
-play around with Rust and AWS Lambda. At its core, it's a simple raw application.
+play around with Rust and AWS Lambda. At its core, it's a simple CRUD app.
 
 ## Description
 Strikes can be used to track (add, list, delete) strikes for a person, team or anything else you want to track.
