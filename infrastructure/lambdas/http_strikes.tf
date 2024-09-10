@@ -2,6 +2,7 @@ locals {
   put_strike_lambda_name = "put-strikes"
   get_strikes_lambda_name = "get-strikes"
   delete_strikes_lambda_name = "delete-strikes"
+  sse_strikes_lambda_name = "sse-strikes"
 }
 
 resource "aws_dynamodb_table" "strikes-table" {

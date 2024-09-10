@@ -1484,6 +1484,7 @@ dependencies = [
  "aws-config",
  "aws-sdk-dynamodb",
  "lambda_http",
+ "serde",
  "serde_json",
  "tokio",
  "uuid",
