@@ -322,3 +322,9 @@ resource "aws_apigatewayv2_deployment" "ws_strikes" {
     create_before_destroy = true
   }
 }
+
+resource "aws_lambda_event_source_mapping" "example" {
+  event_source_arn  = module.lambdas.strikes_db_stream_arn
+  function_name     = module.lambdas.send_strikes_update_lambda_arn
+  starting_position = "LATEST"
+}

@@ -147,6 +147,33 @@ resource "aws_lambda_function" "disconnect" {
 # -----------------------------------------------------------------------------
 # SEND STRIKES UPDATE
 # -----------------------------------------------------------------------------
+data "aws_iam_policy_document" "stream_access" {
+  statement {
+    actions = [
+      "dynamodb:DescribeStream",
+      "dynamodb:GetRecords",
+      "dynamodb:GetShardIterator",
+      "dynamodb:ListStreams",
+    ]
+    resources = ["*"]
+  }
+}
+
+data "aws_iam_policy_document" "strikes_dynamo_read_only" {
+  statement {
+    effect = "Allow"
+
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:Scan",
+    ]
+
+    resources = [
+      "*"
+    ]
+  }
+}
+
 data "aws_iam_policy_document" "manage_connections" {
   statement {
     actions   = ["execute-api:ManageConnections"]
@@ -164,6 +191,14 @@ resource "aws_iam_role" "send_strikes_update_lambda_role" {
   inline_policy {
     name = "manage_connections"
     policy = data.aws_iam_policy_document.manage_connections.json
+  }
+  inline_policy {
+    name = "stream_access"
+    policy = data.aws_iam_policy_document.stream_access.json
+  }
+  inline_policy {
+    name = "strikes_dynamo_read_access"
+    policy = data.aws_iam_policy_document.strikes_dynamo_read_only.json
   }
 }
 
@@ -211,4 +246,12 @@ output "disconnect_lambda_invoke_arn" {
 
 output "disconnect_lambda_function_name" {
   value = aws_lambda_function.disconnect.function_name
+}
+
+output "send_strikes_update_lambda_arn" {
+  value = aws_lambda_function.send_strikes_update.arn
+}
+
+output "send_strikes_update_function_name" {
+  value = aws_lambda_function.send_strikes_update.function_name
 }

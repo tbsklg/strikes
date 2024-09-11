@@ -8,6 +8,8 @@ locals {
 resource "aws_dynamodb_table" "strikes-table" {
   name           = "Strikes"
   billing_mode   = "PROVISIONED"
+  stream_enabled = true
+  stream_view_type = "KEYS_ONLY"
   read_capacity  = 8
   write_capacity = 8
   hash_key       = "UserId"
@@ -220,4 +222,8 @@ output "delete_strikes_lambda_invoke_arn" {
 
 output "delete_strikes_lambda_function_name" {
   value = aws_lambda_function.delete_strikes.function_name
+}
+
+output "strikes_db_stream_arn" {
+  value = aws_dynamodb_table.strikes-table.stream_arn
 }
