@@ -7,7 +7,7 @@ use lambda_http::{
     tracing, LambdaEvent,
 };
 use lambda_runtime::{service_fn, Error};
-use lib::strikes_db::{get_strikes, StrikeEntity};
+use lib::strikes_db::{get_strikes, sort_strikes_desc, StrikeEntity};
 
 #[derive(Debug, Serialize)]
 struct Response {
@@ -24,7 +24,7 @@ async fn function_handler(
     let dynamodb_client = DynamoDbClient::new(&config);
     let connection_ids = connection_ids(&dynamodb_client).await?;
 
-    let strikes = get_strikes("Strikes", &dynamodb_client).await?;
+    let strikes = sort_strikes_desc(&get_strikes("Strikes", &dynamodb_client).await?);
     let message = ul_from_strikes(strikes);
 
     let api_management_config = config::Builder::from(&config)

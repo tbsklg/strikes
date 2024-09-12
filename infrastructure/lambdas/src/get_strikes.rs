@@ -1,7 +1,7 @@
 use aws_config::BehaviorVersion;
 use aws_sdk_dynamodb::Client;
 use lambda_http::{run, service_fn, tracing, Body, Error, Request, Response};
-use lib::strikes_db::get_strikes;
+use lib::strikes_db::{get_strikes, sort_strikes_desc, StrikeEntity};
 
 async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
     let config = aws_config::load_defaults(BehaviorVersion::latest()).await;
@@ -19,9 +19,11 @@ async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
         .collect::<Vec<_>>();
 
     let accept = event.headers().get("accept").unwrap().to_str().unwrap();
+
+    let strikes_desc = sort_strikes_desc(strikes);
     match accept {
         "text/html" => {
-            let li = &strikes
+            let li = &strikes_desc
                 .iter()
                 .map(|strike| format!("<li>{}: {}</li>", strike.user_id, strike.strikes))
                 .collect::<Vec<String>>()

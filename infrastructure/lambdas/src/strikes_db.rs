@@ -77,6 +77,12 @@ pub async fn increment_strikes(
     }
 }
 
+pub fn sort_strikes_desc(strikes: &Vec<StrikeEntity>) -> Vec<StrikeEntity> {
+    let mut strikes = strikes.clone();
+    strikes.sort_by(|a, b| b.strikes.cmp(&a.strikes));
+    strikes
+}
+
 async fn add_user(username: &str, table_name: &str, client: &Client) -> Result<u8, Error> {
     client
         .put_item()
