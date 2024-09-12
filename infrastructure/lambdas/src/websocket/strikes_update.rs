@@ -1,13 +1,13 @@
 use ::serde::Serialize;
 use aws_config::BehaviorVersion;
-use aws_sdk_apigatewaymanagement::config;
-use aws_sdk_dynamodb::{primitives::Blob, Client};
+use aws_sdk_apigatewaymanagement::{config, Client};
+use aws_sdk_dynamodb::{primitives::Blob, Client as DynamoDbClient};
 use lambda_http::{
     lambda_runtime::{self},
     tracing, LambdaEvent,
 };
 use lambda_runtime::{service_fn, Error};
-use lib::strikes_db::get_strikes;
+use lib::strikes_db::{get_strikes, StrikeEntity};
 
 #[derive(Debug, Serialize)]
 struct Response {
@@ -21,39 +21,61 @@ async fn function_handler(
     let endpoint_url = "https://eyx5jmt9mf.execute-api.eu-central-1.amazonaws.com/v1/";
     let config = aws_config::load_defaults(BehaviorVersion::latest()).await;
 
+    let dynamodb_client = DynamoDbClient::new(&config);
+    let connection_ids = connection_ids(&dynamodb_client).await?;
+
+    let strikes = get_strikes("Strikes", &dynamodb_client).await?;
+    let message = ul_from_strikes(strikes);
+
     let api_management_config = config::Builder::from(&config)
         .endpoint_url(endpoint_url)
         .build();
-    let client = aws_sdk_apigatewaymanagement::Client::from_conf(api_management_config);
-
-    let dynamodb_client = Client::new(&config);
-    let connection_ids = Client::new(&config)
-        .scan()
-        .table_name("Connections".to_string())
-        .send()
-        .await?;
-
-    for item in connection_ids.items.unwrap() {
-        let connection_id = item.get("ConnectionId").unwrap().as_s().unwrap();
-        let strikes = get_strikes("Strikes", &dynamodb_client).await?;
-        let message = serde_json::json!({
-            "strikes": strikes.into_iter().map(|strike| {
-                serde_json::json!({
-                    "name": strike.user_id,
-                    "strike_count": strike.strikes,
-                })
-            }).collect::<Vec<_>>()
-        })
-        .to_string();
-
-        send_data(&client, connection_id, message.as_str()).await?;
+    let client = Client::from_conf(api_management_config);
+    for connection_id in connection_ids {
+        send_data(&client, &connection_id, message.as_str()).await?;
     }
 
     Ok(Response { status_code: 200 })
 }
 
+fn ul_from_strikes(strikes: Vec<StrikeEntity>) -> String {
+    let li = strikes
+        .iter()
+        .map(|strike| format!("<li>{}: {}</li>", strike.user_id, strike.strikes))
+        .collect::<Vec<String>>();
+    format!(
+        "<ul hx-swap-oob=\"innerHTML:#content\">{}</ul>",
+        li.join("")
+    )
+}
+
+async fn connection_ids(
+    client: &aws_sdk_dynamodb::Client,
+) -> Result<Vec<String>, aws_sdk_dynamodb::Error> {
+    let result = client
+        .scan()
+        .table_name("Connections".to_string())
+        .send()
+        .await?;
+
+    let connection_ids = result
+        .items
+        .unwrap()
+        .iter()
+        .map(|item| {
+            item.get("ConnectionId")
+                .unwrap()
+                .as_s()
+                .unwrap()
+                .to_string()
+        })
+        .collect();
+
+    Ok(connection_ids)
+}
+
 async fn send_data(
-    client: &aws_sdk_apigatewaymanagement::Client,
+    client: &Client,
     con_id: &str,
     data: &str,
 ) -> Result<(), aws_sdk_apigatewaymanagement::Error> {

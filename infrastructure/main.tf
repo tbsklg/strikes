@@ -18,6 +18,10 @@ provider "aws" {
   region = "eu-central-1"
 }
 
+module "website" {
+  source = "./website"
+}
+
 module "lambdas" {
   source = "./lambdas"
 }

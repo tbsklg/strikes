@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="de">
+
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<script src="https://unpkg.com/htmx.org@1.9.12/dist/ext/ws.js"></script>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Strikes</title>
+</head>
+
+<body>
+  <div hx-ext="ws" ws-connect="wss://eyx5jmt9mf.execute-api.eu-central-1.amazonaws.com/v1">
+    <div id="content"></div>
+  </div>
+</body>
+
+</html>
