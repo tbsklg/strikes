@@ -1,7 +1,7 @@
 use aws_config::BehaviorVersion;
 use aws_sdk_dynamodb::Client;
 use lambda_http::{run, service_fn, tracing, Body, Error, Request, Response};
-use lib::strikes_db::{get_strikes, sort_strikes_desc, StrikeEntity};
+use lib::strikes_db::{get_strikes, sort_strikes_desc};
 
 async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
     let config = aws_config::load_defaults(BehaviorVersion::latest()).await;
@@ -9,7 +9,7 @@ async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
 
     let strikes = &get_strikes("Strikes", &client).await?;
     let body = &strikes
-        .into_iter()
+        .iter()
         .map(|strike| {
             serde_json::json!({
                 "name": strike.user_id,

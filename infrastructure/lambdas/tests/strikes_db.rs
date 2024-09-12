@@ -121,7 +121,7 @@ async fn it_should_delete_all_items() -> Result<(), Box<dyn std::error::Error>> 
         .await
         .unwrap();
 
-    let _ = delete_all_strikes(&table_name, &client).await.unwrap();
+    delete_all_strikes(&table_name, &client).await.unwrap();
     let strikes = get_strikes(&table_name, &client).await.unwrap();
 
     assert_eq!(strikes, vec![]);
