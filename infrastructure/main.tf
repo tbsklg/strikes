@@ -47,7 +47,7 @@ resource "aws_api_gateway_method" "get_strikes" {
   http_method      = "GET"
   resource_id      = aws_api_gateway_resource.strikes.id
   rest_api_id      = aws_api_gateway_rest_api.strikes.id
-  api_key_required = true
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "get_strikes" {
