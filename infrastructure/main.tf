@@ -18,10 +18,17 @@ provider "aws" {
   region = "eu-central-1"
 }
 
+module "website" {
+  source = "./website"
+}
+
 module "lambdas" {
   source = "./lambdas"
 }
 
+# -----------------------------------------------------------------------------
+# REST API
+# -----------------------------------------------------------------------------
 resource "aws_api_gateway_rest_api" "strikes" {
   name = "strikes"
 }
@@ -40,7 +47,7 @@ resource "aws_api_gateway_method" "get_strikes" {
   http_method      = "GET"
   resource_id      = aws_api_gateway_resource.strikes.id
   rest_api_id      = aws_api_gateway_rest_api.strikes.id
-  api_key_required = true
+  api_key_required = false
 }
 
 resource "aws_api_gateway_integration" "get_strikes" {
@@ -154,7 +161,7 @@ resource "aws_api_gateway_integration" "health" {
 resource "aws_lambda_permission" "apigw_invoke_health_lambda" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
-  function_name = module.lambdas.health_lambda_function_name 
+  function_name = module.lambdas.health_lambda_function_name
   principal     = "apigateway.amazonaws.com"
 
   source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"
@@ -248,4 +255,80 @@ resource "aws_api_gateway_usage_plan_key" "dev" {
   key_id        = aws_api_gateway_api_key.dev.id
   key_type      = "API_KEY"
   usage_plan_id = aws_api_gateway_usage_plan.dev.id
+}
+
+# -----------------------------------------------------------------------------
+# WEBSOCKET API
+# -----------------------------------------------------------------------------
+resource "aws_apigatewayv2_api" "ws_strikes" {
+  name                       = "ws-strikes"
+  protocol_type              = "WEBSOCKET"
+  route_selection_expression = "$request.body.action"
+}
+
+# -----------------------------------------------------------------------------
+# CONNECT
+# -----------------------------------------------------------------------------
+resource "aws_apigatewayv2_route" "connect" {
+  api_id    = aws_apigatewayv2_api.ws_strikes.id
+  route_key = "$connect"
+  target    = "integrations/${aws_apigatewayv2_integration.connect.id}"
+}
+
+resource "aws_apigatewayv2_integration" "connect" {
+  api_id           = aws_apigatewayv2_api.ws_strikes.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = module.lambdas.connect_lambda_invoke_arn
+}
+
+resource "aws_lambda_permission" "apigw_ws_invoke_connect_lambda" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambdas.connect_lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.ws_strikes.execution_arn}/*/$connect"
+}
+
+# -----------------------------------------------------------------------------
+# DISCONNECT
+# -----------------------------------------------------------------------------
+resource "aws_apigatewayv2_route" "disconnect" {
+  api_id    = aws_apigatewayv2_api.ws_strikes.id
+  route_key = "$disconnect"
+  target    = "integrations/${aws_apigatewayv2_integration.disconnect.id}"
+}
+
+resource "aws_apigatewayv2_integration" "disconnect" {
+  api_id           = aws_apigatewayv2_api.ws_strikes.id
+  integration_type = "AWS_PROXY"
+  integration_uri  = module.lambdas.disconnect_lambda_invoke_arn
+}
+
+resource "aws_lambda_permission" "apigw_ws_invoke_disconnect_lambda" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambdas.disconnect_lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_apigatewayv2_api.ws_strikes.execution_arn}/*/$disconnect"
+}
+
+resource "aws_apigatewayv2_stage" "ws_strikes" {
+  api_id = aws_apigatewayv2_api.ws_strikes.id
+  name   = "v1"
+}
+
+resource "aws_apigatewayv2_deployment" "ws_strikes" {
+  api_id = aws_apigatewayv2_api.ws_strikes.id
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_lambda_event_source_mapping" "example" {
+  event_source_arn  = module.lambdas.strikes_db_stream_arn
+  function_name     = module.lambdas.send_strikes_update_lambda_arn
+  starting_position = "LATEST"
 }
