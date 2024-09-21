@@ -3,6 +3,7 @@ locals {
   get_strikes_lambda_name = "get-strikes"
   delete_strikes_lambda_name = "delete-strikes"
   sse_strikes_lambda_name = "sse-strikes"
+  website_lambda_name = "website"
 }
 
 resource "aws_dynamodb_table" "strikes-table" {
@@ -159,6 +160,41 @@ resource "aws_lambda_function" "get_strikes" {
 }
 
 # -----------------------------------------------------------------------------
+# WEBSITE
+# -----------------------------------------------------------------------------
+resource "aws_iam_role" "website_lambda_role" {
+  name               = "${local.website_lambda_name}-role"
+  assume_role_policy = data.aws_iam_policy_document.strikes_lambda_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "website_basic_execution_role_policy_attachment" {
+  role       = aws_iam_role.website_lambda_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+data "archive_file" "website_lambda_archive" {
+  type        = "zip"
+  source_file = "${path.module}/target/lambda/website/bootstrap"
+  output_path = "${path.module}/target/archive/website.zip"
+}
+
+resource "aws_lambda_function" "website" {
+  filename      = data.archive_file.website_lambda_archive.output_path
+  function_name = "${local.website_lambda_name}"
+  role          = aws_iam_role.website_lambda_role.arn
+
+  handler = "bootstrap"
+
+  source_code_hash = data.archive_file.website_lambda_archive.output_base64sha256
+
+  runtime = "provided.al2023"
+
+  architectures = ["x86_64"]
+
+  memory_size = 1024
+}
+
+# -----------------------------------------------------------------------------
 # DELETE STRIKES
 # -----------------------------------------------------------------------------
 resource "aws_iam_role" "delete_strikes_lambda_role" {
@@ -226,4 +262,12 @@ output "delete_strikes_lambda_function_name" {
 
 output "strikes_db_stream_arn" {
   value = aws_dynamodb_table.strikes-table.stream_arn
+}
+
+output "website_lambda_invoke_arn" {
+  value = aws_lambda_function.website.invoke_arn
+}
+
+output "website_lambda_function_name" {
+  value = aws_lambda_function.website.function_name
 }

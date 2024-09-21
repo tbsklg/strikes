@@ -168,6 +168,35 @@ resource "aws_lambda_permission" "apigw_invoke_health_lambda" {
 }
 
 # -----------------------------------------------------------------------------
+# WEBSITE
+# -----------------------------------------------------------------------------
+resource "aws_api_gateway_method" "website" {
+  authorization    = "NONE"
+  http_method      = "GET"
+  resource_id      = aws_api_gateway_rest_api.strikes.root_resource_id
+  rest_api_id      = aws_api_gateway_rest_api.strikes.id
+  api_key_required = false 
+}
+
+resource "aws_api_gateway_integration" "website" {
+  http_method             = aws_api_gateway_method.website.http_method
+  resource_id             = aws_api_gateway_rest_api.strikes.root_resource_id
+  rest_api_id             = aws_api_gateway_rest_api.strikes.id
+  type                    = "AWS_PROXY"
+  integration_http_method = "POST"
+  uri                     = module.lambdas.website_lambda_invoke_arn
+}
+
+resource "aws_lambda_permission" "apigw_invoke_website_lambda" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = module.lambdas.website_lambda_function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_rest_api.strikes.execution_arn}/*/*"
+}
+
+# -----------------------------------------------------------------------------
 # DEPLOYMENT 
 # -----------------------------------------------------------------------------
 resource "aws_api_gateway_deployment" "strikes" {
@@ -186,6 +215,8 @@ resource "aws_api_gateway_deployment" "strikes" {
       aws_api_gateway_integration.get_strikes.id,
       aws_api_gateway_method.delete_strikes.id,
       aws_api_gateway_integration.delete_strikes.id,
+      aws_api_gateway_method.website.id,
+      aws_api_gateway_integration.website.id,
     ]))
   }
 

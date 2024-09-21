@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
+path = "src/website.rs"
+name = "website"
+
+[[bin]]
 path = "src/get_strikes.rs"
 name = "get_strikes"
 
