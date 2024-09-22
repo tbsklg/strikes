@@ -50,3 +50,4 @@ serde_json = "1.0"
 serde = "1.0.208"
 tokio = { version = "1", features = ["full"] }
 aws-sdk-s3 = "1.51.0"
+uuid = { version = "1.10.0", features = ["v4"] }
