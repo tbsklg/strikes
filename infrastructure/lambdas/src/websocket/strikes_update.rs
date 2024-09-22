@@ -18,8 +18,9 @@ struct Response {
 async fn function_handler(
     _event: LambdaEvent<aws_lambda_events::dynamodb::Event>,
 ) -> Result<Response, Error> {
-    // TODO: get id from env variable
-    let endpoint_url = "https://xeoyj9uj81.execute-api.eu-central-1.amazonaws.com/v1/";
+    let websocket_api_id = std::env::var("WEBSOCKET_API_ID").unwrap();
+
+    let endpoint_url = format!("https://{}.execute-api.eu-central-1.amazonaws.com/v1/", websocket_api_id);
     let config = aws_config::load_defaults(BehaviorVersion::latest()).await;
 
     let dynamodb_client = DynamoDbClient::new(&config);

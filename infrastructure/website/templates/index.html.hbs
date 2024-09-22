@@ -13,11 +13,11 @@
 <body>
   <div 
       hx-headers='{"accept": "text/html"}'
-      hx-get="https://{{ rest_api_id }}.execute-api.eu-central-1.amazonaws.com/v1/strikes" 
+      hx-get="https://{{restApiId}}.execute-api.eu-central-1.amazonaws.com/v1/strikes" 
       hx-trigger="load"
       hx-swap-oob="innerHTML:#content">
-  </divt
-  <div hx-ext="ws" ws-connect="wss://{{ websocket_api_id }}.execute-api.eu-central-1.amazonaws.com/v1">
+  </div>
+    <div hx-ext="ws" ws-connect="wss://{{websocketApiId}}.execute-api.eu-central-1.amazonaws.com/v1">
   </div>
   <div id="content"></div>
 </body>
