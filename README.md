@@ -15,6 +15,9 @@ The tool can be used with a remote server or locally.
 - Handlebars
 - AWS
 
+## AWS Infrastructure
+![AWS Infrastructure diagram](infrastructure/docs/strikes.drawio.svg)
+
 ## Installation
 
 On macOS using homebrew:
