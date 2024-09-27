@@ -13,7 +13,10 @@ The tool can be used with a remote server or locally.
 - Terraform
 - HTMX
 - Handlebars
-- [AWS](infrastructure/docs/strikes.drawio.svg)
+- AWS
+
+## AWS Infrastructure
+![AWS Infrastructure diagram](infrastructure/docs/strikes.drawio.svg)
 
 ## Installation
 
