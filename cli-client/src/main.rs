@@ -13,23 +13,26 @@ async fn main() {
     let settings = &get_configuration(args);
     let client = create_client(settings);
 
-    match &args.clone().command.unwrap() {
-        Command::Strike { name } => match client.add_strike(name).await {
+    match &args.clone().command {
+        Some(Command::Strike { name }) => match client.add_strike(name).await {
             Ok(strikes) => print_strikes(name, strikes),
             Err(err) => eprintln!("Failed to add strike: {}", err),
         },
-        Command::Ls => match client.get_tarnished().await {
+        Some(Command::Ls) => match client.get_tarnished().await {
             Ok(tarnished) => print_as_table(Tarnished::sort_desc_by_strike(tarnished)),
             Err(err) => eprintln!("Failed to get strikes: {}", err),
         },
-        Command::Clear => match client.clear_strikes().await {
+        Some(Command::Clear) => match client.clear_strikes().await {
             Ok(()) => println!("All strikes have been cleared!"),
             Err(err) => eprintln!("Faild to clear all strikes: {}", err),
         },
-        Command::CheckHealth => match client.check_health().await {
+        Some(Command::CheckHealth) => match client.check_health().await {
             Ok(_) => println!("Everything is fine!"),
             Err(err) => eprintln!("Failed to check health: {}", err),
         },
+        None => {
+            eprintln!("No supported command was provided");
+        }
     }
 }
 

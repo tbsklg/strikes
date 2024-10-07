@@ -139,3 +139,14 @@ fn it_should_reject_usernames_longer_than_20_characters() -> Result<(), Box<dyn 
 
     Ok(())
 }
+
+#[test]
+fn it_should_show_help_if_no_subcommand_is_given() -> Result<(), Box<dyn std::error::Error>> {
+    let mut cmd = Command::cargo_bin("strikes")?;
+
+    cmd.assert().failure().stderr(predicate::str::contains(
+        "Track and assign strikes",
+    ));
+
+    Ok(())
+}

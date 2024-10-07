@@ -20,7 +20,8 @@ pub enum Command {
     name = "Strikes CLI",
     version = env!("CARGO_PKG_VERSION"),
     about = "Track and assign strikes",
-    long_about = "Simple CLI tool to track and assign strikes"
+    long_about = "Simple CLI tool to track and assign strikes",
+    arg_required_else_help = true
 )]
 pub struct Cli {
     #[arg(short, long, help = "Specify the path to the configuration file")]
